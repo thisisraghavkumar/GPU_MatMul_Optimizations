@@ -10,7 +10,7 @@ BINDIR = bin
 TARGET=$(BINDIR)/kernel_runner
 SOURCES=$(wildcard $(SRCDIR)/*.cu $(KERNELSDIR)/*.cu)
 OBJECTS=$(patsubst $(SRCDIR)/%.cu,$(OBJDIR)/%.o,$(SOURCES)) \
-	$(patsubst $(KERNELSDIR)/%.cu,$(OBJDIR)/%.o,$(SOURCES))
+	$(patsubst $(KERNELSDIR)/%.cu,$(OBJDIR)/kernels/%.o,$(SOURCES))
 
 all: $(TARGET)
 
@@ -23,7 +23,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cu $(KERNELSDIR)/mykernels.cuh
 	$(NVCC) $(CFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: $(KERNELSDIR)/%.cu $(KERNELSDIR)/mykernels.cuh
-	@mkdir -p $(OBJDIR)
+	@mkdir -p $(OBJDIR)/kernels
 	$(NVCC) $(CFLAGS) -c $< -o $@
 
 clean:
