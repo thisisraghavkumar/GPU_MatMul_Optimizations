@@ -37,15 +37,15 @@ int main(){
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<float> dis(50.0, 25.0);
+    std::uniform_real_distribution<float> dis(50.0, 25.0);
     
     h_A = new float[sizeA];
     h_B = new float[sizeB];
     h_C = new float[sizeC];
     h_C_cublas = new float[sizeC];
-    cudaMalloc(d_A, sF * sizeA);
-    cudaMalloc(d_B, sF * sizeB);
-    cudaMalloc(d_C, sF * sizeC);
+    cudaMalloc(&d_A, sF * sizeA);
+    cudaMalloc(&d_B, sF * sizeB);
+    cudaMalloc(&d_C, sF * sizeC);
 
     populate_array(h_A, sizeA, gen, dis);
     populate_array(h_B, sizeB, gen, dis);
@@ -60,7 +60,7 @@ int main(){
     cublasHandle_t handle;
     cublasCreate(&handle);
     
-    cudaEventRecord(cublaBeg);
+    cudaEventRecord(cublasBeg);
     invoke_cublas_kernel(d_A, d_B, d_C, m, k, n, handle);
     cudaEventRecord(cublasEnd);
     cudaEventSynchronize(cublasBeg);
