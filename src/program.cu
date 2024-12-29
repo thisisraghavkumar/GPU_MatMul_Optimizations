@@ -81,12 +81,8 @@ int main(){
     cublasHandle_t handle;
     cublasCreate(&handle);
     
-    cudaEventRecord(cublasBeg);
     invoke_cublas_kernel(d_A, d_B, d_C, m, k, n, handle);
-    cudaEventRecord(cublasEnd);
-    cudaEventSynchronize(cublasBeg);
-    cudaEventSynchronize(cublasEnd);
-    cudaEventElapsedTime(&cublas_elapsed_time, cublasBeg, cublasEnd);
+    cudaDeviceSynchronize();
     cudaMemcpy(h_C_cublas, d_C, sF*sizeC, cudaMemcpyDeviceToHost);
 
     invoke_kernel = invoke_naive_matmul;
@@ -103,10 +99,20 @@ int main(){
     for(int i=0; i<warmup_runs-1; i++){
         invoke_kernel(d_A, d_B, d_C, m, k, n);
     }
-
+    cudaEventRecord(cublasBeg);
+    for(int i=0; i<measurement_runs; i++){
+        invoke_cublas_kernel(d_A, d_B, d_C, m, k, n,handle);
+	cudaDeviceSynchronize();
+    }
+    cudaEventRecord(cublasEnd);
+    cudaEventSynchronize(cublasBeg);
+    cudaEventSynchronize(cublasEnd);
+    cudaEventElapsedTime(&cublas_elapsed_time, cublasBeg, cublasEnd);
+ 
     cudaEventRecord(beg);
     for(int i=0; i<measurement_runs; i++){
         invoke_kernel(d_A, d_B, d_C, m, k, n);
+	cudaDeviceSynchronize();
     }
     cudaEventRecord(end);
     cudaEventSynchronize(beg);
@@ -115,8 +121,8 @@ int main(){
 
     std::cout << std::fixed << std::setprecision(5);
     std::cout<<"Number of operations: "<<numoperations<<std::endl;
-    std::cout<<"Time taken by cublas kernel: "<<cublas_elapsed_time<<" ms"<<std::endl;
-    std::cout<<"Cublas GFLOPS: "<<(numoperations / (cublas_elapsed_time / 1000)) / 1e9<<std::endl;
+    std::cout<<"Time taken by cublas kernel: "<<cublas_elapsed_time/measurement_runs<<" ms"<<std::endl;
+    std::cout<<"Cublas GFLOPS: "<<(numoperations / ((cublas_elapsed_time / measurement_runs) / 1000)) / 1e9<<std::endl;
     std::cout<<"Time taken by my kernel: "<<elapsed_time/measurement_runs<<" ms"<<std::endl;
     std::cout<<"Kernel GFLOPS: "<<(numoperations / ((elapsed_time/measurement_runs) / 1000)) / 1e9<<std::endl;
     std::cout<<"Relative performance: "<<cublas_elapsed_time / (elapsed_time/measurement_runs)<<std::endl;
