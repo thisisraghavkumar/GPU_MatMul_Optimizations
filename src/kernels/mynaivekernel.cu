@@ -9,7 +9,7 @@ __global__ void mynaivekernel(float *A, float *B, float *C, int m, int k, int n)
     if(firstrow < m && secondcol < n){
         float sum = 0.0f;
         for(int i=0; i<k; i++){
-            sum += A[firstrow * k + 1] * B[i*n + secondcol];
+            sum += A[firstrow * k + i] * B[i*n + secondcol];
         }
         C[firstrow * n + secondcol] = sum;
     }

@@ -1,5 +1,5 @@
 NVCC = /usr/local/cuda-12.4/bin/nvcc
-CFLAGS = -std=c++17 -lcublas
+CFLAGS = -std=c++17 -lcublas -g
 
 SRCDIR = src
 KERNELSDIR = $(SRCDIR)/kernels
@@ -10,9 +10,6 @@ BINDIR = bin
 TARGET=$(BINDIR)/kernel_runner
 SOURCES=$(wildcard $(SRCDIR)/*.cu $(KERNELSDIR)/*.cu)
 OBJECTS=$(patsubst $(SRCDIR)/%.cu,$(OBJDIR)/%.o,$(SOURCES)) 
-
-$(info SOURCES=$(SOURCES))
-$(info OBJECTS=$(OBJECTS))
 
 all: $(TARGET)
 
