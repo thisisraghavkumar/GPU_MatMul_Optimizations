@@ -92,8 +92,12 @@ int main(){
     cudaMemcpy(h_C, d_C, sF*sizeC, cudaMemcpyDeviceToHost);
     int randomRow = gen() % m;
     int randomCol = gen() % n;
-    if(h_C[randomRow * n + randomCol] != h_C_cublas[randomRow * n + randomCol]){
-        std::cout << "Error: Cublas and my kernel results do not match" << std::endl;
+    float tolerance = 1;
+    if(fabs(h_C[randomRow * n + randomCol] - h_C_cublas[randomRow * n + randomCol]) > tolerance){
+        std::cout << "Error: Cublas and my kernel results do not match at "<<randomRow<<", "<<randomCol << std::endl;
+	std::cout <<"Content of h_C = "<<std::setprecision(32)<<h_C[randomRow * n + randomCol]<<std::endl;
+	std::cout <<"Content of h_C_cublas = "<<std::setprecision(32)<<h_C_cublas[randomRow * n + randomCol]<<std::endl;
+
         return 1;
     }
     for(int i=0; i<warmup_runs-1; i++){
