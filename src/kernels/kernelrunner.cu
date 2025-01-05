@@ -1,4 +1,5 @@
 #include <cuda_runtime.h>
+#include <random>
 #include "helpers/myhelpers.h"
 
 /**
