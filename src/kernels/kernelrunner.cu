@@ -1,6 +1,6 @@
 #include <cuda_runtime.h>
 #include "mykernels.cuh"
-#include "helpers/myhelpers.h"
+#include "../helpers/myhelpers.h"
 
 /**
  * Returns the time taken by invoking the passed kernel on matrices A and B measurement_iterations times.
