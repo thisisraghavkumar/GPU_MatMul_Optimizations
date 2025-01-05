@@ -1,7 +1,7 @@
 #include "mykernels.cuh"
 #include "../helpers/myhelpers.h"
 
-__global__ shared_memory_kernel(float *A, float *B, float *C, int m, int k, int n){
+__global__ void shared_memory_kernel(float *A, float *B, float *C, int m, int k, int n){
     int frameRow = blockIdx.x;
     int frameCol = blockIdx.y;
     
@@ -33,7 +33,7 @@ __global__ shared_memory_kernel(float *A, float *B, float *C, int m, int k, int 
         for(int i=0; i<BLOCK_SIZE; i++){
             sum += As[threadRow * BLOCK_SIZE + i] * Bs[i * BLOCK_SIZE + threadCol];
         }
-        __syncThreads();
+        __syncthreads();
     }
     C[threadRow * n + threadCol] = sum;
 }

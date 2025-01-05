@@ -45,9 +45,8 @@ int main(){
     long long numoperations = 2LL * m * n * k;
     float *h_A, *h_B, *h_C, *h_C_cublas;//, *h_C_ref;
     float *d_A, *d_B, *d_C;
-    float elapsed_time, cublas_elapsed_time;
+    float cublas_elapsed_time;
     cudaEvent_t beg, end, cublasBeg, cublasEnd;
-    void (*invoke_kernel)(float *, float *, float *, int, int, int);
 
 
     std::random_device rd;
