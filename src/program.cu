@@ -7,20 +7,6 @@
 #include <algorithm>
 
 /*
-void naive_mat_mul(float *A, float *B, float *C, int m, int k, int n){
-	for(int i=0; i<m; i++){
-		for(int j=0; j<n; j++){
-			float sum = 0.0f;
-			for(int l=0; l<k; l++){
-				sum += A[i * k + l] * B[l * n + j];
-			}
-			C[i * n + j] = sum;
-		}
-	}
-}
-*/
-
-/*
 * Function to populate an array of floats with random values
 */
 void populate_array(float *arr, int size, std::mt19937 &gen, std::uniform_real_distribution<float> &dis){
@@ -29,10 +15,35 @@ void populate_array(float *arr, int size, std::mt19937 &gen, std::uniform_real_d
     }
 }
 
+void CudaDeviceInfo() {
+    int deviceId;
+
+    cudaGetDevice(&deviceId);
+
+    cudaDeviceProp props{};
+    cudaGetDeviceProperties(&props, deviceId);
+    std::cout<<"Device ID                         : "<<deviceId<<std::endl;
+    std::cout<<"Name                              : "<<props.name<<std::endl;
+    std::cout<<"Compute Capability                : "<<props.major<<"."<<props.minor<<std::endl;
+    std::cout<<"Memory Bus Width                  : "<<props.memoryBusWidth<<std::endl;
+    std::cout<<"Max threads per block             : "<<props.maxthreadsPerBlock<<std::endl;
+    std::cout<<"Max threads per multi-processor   : "<<props.maxThreadsPerMultiProcesor<<std::endl;
+    std::cout<<"Registers per block               : "<<props.regsPerBlock<<std::endl;
+    std::cout<<"Registers per multi-processor     : "<<props.regsPerMultiprocessor<<std::endl;
+    std::cout<<"Total Global Memory               : "<<props.totalGlobalMem/1024/1024<<"MB"<<std::endl;
+    std::cout<<"Shared Memory per block           : "<<props.sharedMemPerBlock/1024<<"KB"<<std::endl;
+    std::cout<<"Shared Memory per multi-processor : "<<props.sharedMemPerMultiprocessor/1024<<"KB"<<std::endl;
+    std::cout<<"Total Constant Memory             : "<<props.totalConstMem/1024<<"KB"<<std::endl;
+    std::cout<<"Multi-processor count             : "<<props.multiProcessorCount<<std::endl;
+    std::cout<<"Warp Size      : "<<props.warpSize<<std::endl;
+    std::cout<<"----------------------------------------------------------------"<<std::endl;
+};
+
 /*
 * Invocation starts here.
 */
 int main(){
+    CudaDeviceInfo();
     int m = MMM;
     int n = MMN;
     int k = MMK;
