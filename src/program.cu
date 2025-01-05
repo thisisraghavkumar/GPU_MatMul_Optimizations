@@ -42,7 +42,7 @@ int main(){
     //int sF = sizeof(float);
     int warmup_runs = 5;
     int measurement_runs = 50;
-    long long numoperations = m * n * 2 * k;
+    long long numoperations = 2LL * m * n * k;
     float *h_A, *h_B, *h_C, *h_C_cublas;//, *h_C_ref;
     float *d_A, *d_B, *d_C;
     float elapsed_time, cublas_elapsed_time;
