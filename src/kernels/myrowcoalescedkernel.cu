@@ -1,5 +1,5 @@
 #include "mykernels.cuh"
-#include "helpers/myhelpers.h"
+#include "../helpers/myhelpers.h"
 #include <cuda_runtime.h>
 
 __global__ void myRowCoalesceKernel(float *A, float *B, float *C, int m, int k, int n){
