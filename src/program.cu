@@ -27,7 +27,7 @@ void CudaDeviceInfo() {
     std::cout<<"Compute Capability                : "<<props.major<<"."<<props.minor<<std::endl;
     std::cout<<"Memory Bus Width                  : "<<props.memoryBusWidth<<std::endl;
     std::cout<<"Max threads per block             : "<<props.maxThreadsPerBlock<<std::endl;
-    std::cout<<"Max threads per multi-processor   : "<<props.maxThreadsPerMultiProcesor<<std::endl;
+    std::cout<<"Max threads per multi-processor   : "<<props.maxThreadsPerMultiProcessor<<std::endl;
     std::cout<<"Registers per block               : "<<props.regsPerBlock<<std::endl;
     std::cout<<"Registers per multi-processor     : "<<props.regsPerMultiprocessor<<std::endl;
     std::cout<<"Total Global Memory               : "<<props.totalGlobalMem/1024/1024<<"MB"<<std::endl;
@@ -35,9 +35,9 @@ void CudaDeviceInfo() {
     std::cout<<"Shared Memory per multi-processor : "<<props.sharedMemPerMultiprocessor/1024<<"KB"<<std::endl;
     std::cout<<"Total Constant Memory             : "<<props.totalConstMem/1024<<"KB"<<std::endl;
     std::cout<<"Multi-processor count             : "<<props.multiProcessorCount<<std::endl;
-    std::cout<<"Warp Size      : "<<props.warpSize<<std::endl;
+    std::cout<<"Warp Size                         : "<<props.warpSize<<std::endl;
     std::cout<<"----------------------------------------------------------------"<<std::endl;
-};
+}
 
 /*
 * Invocation starts here.
