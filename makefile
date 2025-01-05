@@ -17,7 +17,7 @@ $(TARGET): $(OBJECTS)
 	@mkdir -p $(BINDIR)
 	$(NVCC) $(CFLAGS) -o $@ $^
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cu $(KERNELSDIR)/mykernels.cuh
+$(OBJDIR)/%.o: $(SRCDIR)/%.cu $(KERNELSDIR)/mykernels.cuh $(HELPERSDIR)/myhelpers.cuh
 	@mkdir -p $(OBJDIR)
 	@mkdir -p $(OBJDIR)/kernels
 	$(NVCC) $(CFLAGS) -c $< -o $@
