@@ -39,7 +39,7 @@ int main(){
     int sizeA = m * k;
     int sizeB = k * n;
     int sizeC = m * n;
-    int sF = sizeof(float);
+    //int sF = sizeof(float);
     int warmup_runs = 5;
     int measurement_runs = 50;
     int numoperations = m * n * 2 * k;
@@ -85,24 +85,10 @@ int main(){
     cudaDeviceSynchronize();
     cudaMemcpy(h_C_cublas, d_C, sF*sizeC, cudaMemcpyDeviceToHost);
 
-    invoke_kernel = invoke_rowmajor_matmul;
-
-    // Startup check
-    invoke_kernel(d_A, d_B, d_C, m, k, n);
-    cudaMemcpy(h_C, d_C, sF*sizeC, cudaMemcpyDeviceToHost);
-    int randomRow = gen() % m;
-    int randomCol = gen() % n;
-    float tolerance = 1;
-    if(fabs(h_C[randomRow * n + randomCol] - h_C_cublas[randomRow * n + randomCol]) > tolerance){
-        std::cout << "Error: Cublas and my kernel results do not match at "<<randomRow<<", "<<randomCol << std::endl;
-	std::cout <<"Content of h_C = "<<std::setprecision(32)<<h_C[randomRow * n + randomCol]<<std::endl;
-	std::cout <<"Content of h_C_cublas = "<<std::setprecision(32)<<h_C_cublas[randomRow * n + randomCol]<<std::endl;
-
-        return 1;
-    }
-    for(int i=0; i<warmup_runs-1; i++){
-        invoke_kernel(d_A, d_B, d_C, m, k, n);
-    }
+    invoke_kernel = invoke_naive_matmul;
+    float naive_time = run_kernel("naive", invoke_naive_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
+    float row_coalesce_time = run_kernel("row_coalesce", invoke_rowmajor_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
+    
     cudaEventRecord(cublasBeg);
     for(int i=0; i<measurement_runs; i++){
         invoke_cublas_kernel(d_A, d_B, d_C, m, k, n,handle);
@@ -112,24 +98,15 @@ int main(){
     cudaEventSynchronize(cublasBeg);
     cudaEventSynchronize(cublasEnd);
     cudaEventElapsedTime(&cublas_elapsed_time, cublasBeg, cublasEnd);
- 
-    cudaEventRecord(beg);
-    for(int i=0; i<measurement_runs; i++){
-        invoke_kernel(d_A, d_B, d_C, m, k, n);
-	cudaDeviceSynchronize();
-    }
-    cudaEventRecord(end);
-    cudaEventSynchronize(beg);
-    cudaEventSynchronize(end);
-    cudaEventElapsedTime(&elapsed_time, beg, end);
 
     std::cout << std::fixed << std::setprecision(5);
     std::cout<<"Number of operations: "<<numoperations<<std::endl;
     std::cout<<"Time taken by cublas kernel: "<<cublas_elapsed_time/measurement_runs<<" ms"<<std::endl;
     std::cout<<"Cublas GFLOPS: "<<(numoperations / ((cublas_elapsed_time / measurement_runs) / 1000)) / 1e9<<std::endl;
-    std::cout<<"Time taken by my kernel: "<<elapsed_time/measurement_runs<<" ms"<<std::endl;
-    std::cout<<"Kernel GFLOPS: "<<(numoperations / ((elapsed_time/measurement_runs) / 1000)) / 1e9<<std::endl;
-    std::cout<<"Relative performance: "<<cublas_elapsed_time / (elapsed_time/measurement_runs)<<std::endl;
+    std::cout<<"Time taken by naive kernel: "<<naive_time/measurement_runs<<" ms"<<std::endl;
+    std::cout<<"Naive Kernel GFLOPS: "<<(numoperations / ((naive_time/measurement_runs) / 1000)) / 1e9<<std::endl;
+    std::cout<<"Time taken by row coalesce kernel: "<<row_coalesce_time/measurement_runs<<" ms"<<std::endl;
+    std::cout<<"Row coalesce Kernel GFLOPS: "<<(numoperations / ((row_coalesce_time/measurement_runs) / 1000)) / 1e9<<std::endl;
     cudaFree(d_A);
     cudaFree(d_B);
     cudaFree(d_C);
