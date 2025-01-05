@@ -4,7 +4,7 @@
 /**
  * Returns the time taken by invoking the passed kernel on matrices A and B measurement_iterations times.
  */
-float run_kernel(char[] kernel_name, void (*invoke_kernel)(float *, float *, float *, int, int, int), float *d_A, float *d_B, float *d_C, int m, int k, int n, float *h_C, float *h_C_ref, std::mt19937 gen, int warmup_runs, int measurement_runs){
+float run_kernel(const char* kernel_name, void (*invoke_kernel)(float *, float *, float *, int, int, int), float *d_A, float *d_B, float *d_C, int m, int k, int n, float *h_C, float *h_C_ref, std::mt19937 gen, int warmup_runs, int measurement_runs){
     CudaEvent_t beg, end;
     float elapsed_time;
     CudaEventCreate(&beg);
