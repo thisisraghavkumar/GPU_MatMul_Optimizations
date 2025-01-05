@@ -1,3 +1,5 @@
+#include <iostream>
+#include <iomanip>
 #include <cuda_runtime.h>
 #include "mykernels.cuh"
 #include "../helpers/myhelpers.h"
@@ -6,10 +8,10 @@
  * Returns the time taken by invoking the passed kernel on matrices A and B measurement_iterations times.
  */
 float run_kernel(const char* kernel_name, void (*invoke_kernel)(float *, float *, float *, int, int, int), float *d_A, float *d_B, float *d_C, int m, int k, int n, float *h_C, float *h_C_ref, std::mt19937 gen, int warmup_runs, int measurement_runs){
-    CudaEvent_t beg, end;
+    cudaEvent_t beg, end;
     float elapsed_time;
-    CudaEventCreate(&beg);
-    CudaEventCreate(&end);
+    cudaEventCreate(&beg);
+    cudaEventCreate(&end);
     int sizeC = m * n;
     invoke_kernel(d_A, d_B, d_C, m, k, n);
     cudaMemcpy(h_C, d_C, sF*sizeC, cudaMemcpyDeviceToHost);
