@@ -1,5 +1,5 @@
 NVCC = /usr/local/cuda-12.4/bin/nvcc
-CFLAGS = -std=c++17 -lcublas -g -Xptxas=-v
+CFLAGS = -std=c++17 -lcublas -g -Xptxas=-v -lnvToolsExt
 
 SRCDIR = src
 KERNELSDIR = $(SRCDIR)/kernels

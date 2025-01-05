@@ -1,6 +1,8 @@
 #include <iostream>
 #include <iomanip>
 #include <cuda_runtime.h>
+#include <nvtx3/nvToolsExt.h>
+
 #include "mykernels.cuh"
 #include "../helpers/myhelpers.h"
 
@@ -30,10 +32,12 @@ float run_kernel(const char* kernel_name, void (*invoke_kernel)(float *, float *
     }
  
     cudaEventRecord(beg);
+    nvtxRangePush(kernel_name);
     for(int i=0; i<measurement_runs; i++){
         invoke_kernel(d_A, d_B, d_C, m, k, n);
-	cudaDeviceSynchronize();
+        cudaDeviceSynchronize();
     }
+    nvtxRangePop();
     cudaEventRecord(end);
     cudaEventSynchronize(beg);
     cudaEventSynchronize(end);
