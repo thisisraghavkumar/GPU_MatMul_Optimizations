@@ -88,7 +88,8 @@ int main(){
     invoke_kernel = invoke_naive_matmul;
     float naive_time = run_kernel("naive", invoke_naive_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
     float row_coalesce_time = run_kernel("row_coalesce", invoke_rowmajor_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
-    
+    float shared_memory_time = run_kernel("shared_memory", invoke_shared_memory_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
+
     cudaEventRecord(cublasBeg);
     for(int i=0; i<measurement_runs; i++){
         invoke_cublas_kernel(d_A, d_B, d_C, m, k, n,handle);
@@ -107,6 +108,8 @@ int main(){
     std::cout<<"Naive Kernel GFLOPS: "<<(numoperations / ((naive_time/measurement_runs) / 1000)) / 1e9<<std::endl;
     std::cout<<"Time taken by row coalesce kernel: "<<row_coalesce_time/measurement_runs<<" ms"<<std::endl;
     std::cout<<"Row coalesce Kernel GFLOPS: "<<(numoperations / ((row_coalesce_time/measurement_runs) / 1000)) / 1e9<<std::endl;
+    std::cout<<"Time taken by shared memory kernel: "<<shared_memory_time/measurement_runs<<" ms"<<std::endl;
+    std::cout<<"Shared Memory Kernel GFLOPS: "<<(numoperations / ((shared_memory_time/measurement_runs) / 1000)) / 1e9<<std::endl;
     cudaFree(d_A);
     cudaFree(d_B);
     cudaFree(d_C);
