@@ -26,7 +26,7 @@ void CudaDeviceInfo() {
     std::cout<<"Name                              : "<<props.name<<std::endl;
     std::cout<<"Compute Capability                : "<<props.major<<"."<<props.minor<<std::endl;
     std::cout<<"Memory Bus Width                  : "<<props.memoryBusWidth<<std::endl;
-    std::cout<<"Max threads per block             : "<<props.maxthreadsPerBlock<<std::endl;
+    std::cout<<"Max threads per block             : "<<props.maxThreadsPerBlock<<std::endl;
     std::cout<<"Max threads per multi-processor   : "<<props.maxThreadsPerMultiProcesor<<std::endl;
     std::cout<<"Registers per block               : "<<props.regsPerBlock<<std::endl;
     std::cout<<"Registers per multi-processor     : "<<props.regsPerMultiprocessor<<std::endl;
