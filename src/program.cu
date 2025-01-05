@@ -85,7 +85,7 @@ int main(){
     cudaDeviceSynchronize();
     cudaMemcpy(h_C_cublas, d_C, sF*sizeC, cudaMemcpyDeviceToHost);
 
-    invoke_kernel = invoke_naive_matmul;
+    invoke_kernel = invoke_rowmajor_matmul;
 
     // Startup check
     invoke_kernel(d_A, d_B, d_C, m, k, n);
