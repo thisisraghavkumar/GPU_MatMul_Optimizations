@@ -3,8 +3,8 @@
 #include <cuda_runtime.h>
 
 __global__ void myRowCoalesceKernel(float *A, float *B, float *C, int m, int k, int n){
-    int firstRow = blockIdx.x * blockDim.x + threadIdx.x/blockDim.x;
-    int secondCol = blockIdx.x * blockDim.x + threadIdx.x%blockDim.x;
+    int firstRow = blockIdx.x * BLOCK_SIZE + threadIdx.x/blockDim.x;
+    int secondCol = blockIdx.y * BLOCK_SIZE + threadIdx.x%blockDim.x;
 
     if(firstRow < m && secondCol < n){
         float sum = 0.0f;
