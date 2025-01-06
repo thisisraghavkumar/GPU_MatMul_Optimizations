@@ -48,5 +48,5 @@ void invoke_1D_tiled_matmul(float *A, float *B, float *C, int m, int k, int n){
     int TM = 8;
     dim3 gridDimension(CEILDIV(n, BN), CEILDIV(m, BM));
     dim3 blockDimension((BN * BM)/TM);
-    my1dtiledkernel<BM, BK, BN, TM><<<gridDimension,blockDimension>>>(A, B, C, m, k, n);
+    my1dtiledkernel<64,8,64,8><<<gridDimension,blockDimension>>>(A, B, C, m, k, n);
 }
