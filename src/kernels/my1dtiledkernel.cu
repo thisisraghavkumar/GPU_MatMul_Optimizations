@@ -27,7 +27,7 @@ __global__ void my1dtiledkernel(float *A, float *B, float *C, int m, int k, int 
         __syncthreads();
 
         A += BK;
-        B += (BK * N);
+        B += (BK * n);
         for(int l=0; l<BK; l++){
             float temp = Bs[l * BN + threadCol];
             for(int i=0; i<TM; i++){
@@ -42,7 +42,7 @@ __global__ void my1dtiledkernel(float *A, float *B, float *C, int m, int k, int 
 }
 
 template <const int BM, const int BK, const int BN, const int TM> void invoke_1D_tiled_matmul(float *A, float *B, float *C, int m, int k, int n){
-    dim3 gridDimension(CEILDIV(N, BN), CEILDIV(M, BM));
+    dim3 gridDimension(CEILDIV(n, BN), CEILDIV(m, BM));
     dim3 blockDimension((BN * BM)/TM);
     my1dtiledkernel<BM,BK,BN,TM><<<gridDimension,blockDimension>>>(A, B, C, m, k, n);
 }
