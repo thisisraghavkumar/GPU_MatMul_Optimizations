@@ -98,7 +98,7 @@ int main(){
     float naive_time = run_kernel("naive", invoke_naive_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
     float row_coalesce_time = run_kernel("row_coalesce", invoke_rowmajor_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
     float shared_memory_time = run_kernel("shared_memory", invoke_shared_memory_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
-    float oned_tiled_time = run_kernel("1_d_tiled", invoke_1D_tiled_matmul<64,8,64,8>, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
+    float oned_tiled_time = run_kernel("1_d_tiled", invoke_1D_tiled_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
 
     cudaEventRecord(cublasBeg);
     for(int i=0; i<measurement_runs; i++){
