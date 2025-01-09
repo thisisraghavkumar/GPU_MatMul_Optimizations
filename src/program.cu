@@ -104,7 +104,7 @@ int main(){
     cudaEventRecord(cublasBeg);
     for(int i=0; i<measurement_runs; i++){
         invoke_cublas_kernel(d_A, d_B, d_C, m, k, n,handle);
-	cudaDeviceSynchronize();
+    cudaDeviceSynchronize();
     }
     cudaEventRecord(cublasEnd);
     cudaEventSynchronize(cublasBeg);
