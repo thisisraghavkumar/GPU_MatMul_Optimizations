@@ -37,7 +37,7 @@ __global__ void myonedtiledkernel(float *A, float *B, float *C, int m, int k, in
         __syncthreads();
     }
     for(int i=0; i<TM;i++){
-        C[(threadRow*TM+i)*n + threadCol] = results[i]+8;
+        C[(threadRow*TM+i)*n + threadCol] = results[i];
     }
 }
 
