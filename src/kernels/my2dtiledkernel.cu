@@ -2,7 +2,7 @@
 #include "../helpers/myhelpers.h"
 
 template <const int BM, const int BN, const int BK, const int TM, const int TN> 
-__global__ void my2dkernel(float *A, float *B, float *C, int m, int k, int n){
+__global__ void my2dtiledkernel(float *A, float *B, float *C, int m, int k, int n){
     int cRow = blockIdx.y;
     int cCol = blockIdx.x;
 
@@ -75,5 +75,5 @@ void invoke_2D_tiled_matmul(float *A, float *B, float *C, int m, int k, int n){
 
     dim3 gridSize(CEILDIV(n, BN),CEILDIV(m, BM));
     dim3 blockSize((BM * BN)/(TM * TN));
-    my2dkernel<BM, BN, BK, TM, TN><<<gridSize, blockSize>>>(A, B, C, m, k, n);
+    my2dtiledkernel<BM, BN, BK, TM, TN><<<gridSize, blockSize>>>(A, B, C, m, k, n);
 }
