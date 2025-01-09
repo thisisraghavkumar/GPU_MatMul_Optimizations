@@ -44,6 +44,6 @@ float run_kernel(const char* kernel_name, void (*invoke_kernel)(float *, float *
     cudaEventSynchronize(beg);
     cudaEventSynchronize(end);
     cudaEventElapsedTime(&elapsed_time, beg, end);
-    std::cout<<"Invoking kernel "<<invoke_kernel<<" time taken: "<<elapsed_time<<std::endl;
+    std::cout<<"Invoking kernel "<<&invoke_kernel<<" time taken: "<<elapsed_time<<std::endl;
     return elapsed_time;
 }
