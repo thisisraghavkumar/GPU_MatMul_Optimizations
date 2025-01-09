@@ -31,7 +31,7 @@ __global__ void my1dtiledkernel(float *A, float *B, float *C, int m, int k, int 
         for(int l=0; l<BK; l++){
             float temp = Bs[l * BN + threadCol];
             for(int i=0; i<TM; i++){
-                results[i] += As[(threadRow * TM + i) * BK + l] * temp + 7;
+                results[i] += As[(threadRow * TM + i) * BK + l] * temp;
             }
         }
         __syncthreads();
