@@ -67,8 +67,8 @@ __global__ void my2dkernel(float *A, float *B, float *C, int m, int k, int n){
 }
 
 void invoke_2D_tiled_matmul(float *A, float *B, float *C, int m, int k, int n){
-    const int BM = 128;
-    const int BN = 128;
+    const int BM = 64;
+    const int BN = 64;
     const int BK = 8;
     const int TM = 8;
     const int TN = 8;
