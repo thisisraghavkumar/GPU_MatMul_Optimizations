@@ -21,7 +21,7 @@ __global__ void my2dkernel(float *A, float *B, float *C, int m, int k, int n){
     int rowsForA = threadsNeeded / BK;
 
     int innerColB = threadIdx.x % BN;
-    int innerRowA = threadIdx.x / BK;
+    int innerRowB = threadIdx.x / BK;
     int colsForB = threadsNeeded / BN;
 
     float results[TM * TN] = {0.0f};
@@ -30,11 +30,11 @@ __global__ void my2dkernel(float *A, float *B, float *C, int m, int k, int n){
 
     A += (cRow * BM * k);
     B += (cCol * BN);
-    C += (cRow * BM * N) + (cCol * BN);
+    C += (cRow * BM * n) + (cCol * BN);
 
-    for(int bkId = 0; bkId < k; bdId+=BK){
+    for(int bkId = 0; bkId < k; bkId+=BK){
         for(int i=0; i<TM; i++){
-            As[(innerRowA + i) * BK + innerColA] = A[(inerRowA + i) * k + innerColA];
+            As[(innerRowA + i) * BK + innerColA] = A[(innerRowA + i) * k + innerColA];
         }
         for(int i=0; i<TN; i++){
             Bs[(innerRowB + i) * BN + innerColB] = B[(innerRowB + i) * n + innerColB];
@@ -73,7 +73,7 @@ void invoke_2D_tiled_matmul(float *A, float *B, float *C, int m, int k, int n){
     const int TM = 8;
     const int TN = 8;
 
-    dim3 gridSize(CEILDIV(N, BN),CEILDIV(M, BM));
+    dim3 gridSize(CEILDIV(n, BN),CEILDIV(m, BM));
     dim3 blockSize((BM * BN)/(TM * TN));
     my2dkernel<BM, BN, BK, TM, TN><<<gridSize, blockSize>>>(A, B, C, m, k, n);
 }
