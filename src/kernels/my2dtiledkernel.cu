@@ -22,7 +22,7 @@ __global__ void my2dkernel(float *A, float *B, float *C, int m, int k, int n){
 
     int innerColB = threadIdx.x % BN;
     int innerRowB = threadIdx.x / BK;
-    int colsForB = threadsNeeded / BN;
+    int rowsForB = threadsNeeded / BN;
 
     float results[TM * TN] = {0.0f};
     float regM[TM];
@@ -33,10 +33,10 @@ __global__ void my2dkernel(float *A, float *B, float *C, int m, int k, int n){
     C += (cRow * BM * n) + (cCol * BN);
 
     for(int bkId = 0; bkId < k; bkId+=BK){
-        for(int i=0; i<TM; i++){
+        for(int i=0; i<TM; i+=rowsForA){
             As[(innerRowA + i) * BK + innerColA] = A[(innerRowA + i) * k + innerColA];
         }
-        for(int i=0; i<TN; i++){
+        for(int i=0; i<TN; i+=rowsForB){
             Bs[(innerRowB + i) * BN + innerColB] = B[(innerRowB + i) * n + innerColB];
         }
         __syncthreads();
