@@ -61,7 +61,7 @@ __global__ void my2dkernel(float *A, float *B, float *C, int m, int k, int n){
     }
     for(int i=0; i<TM; i++){
         for(int j=0; j<TN; j++){
-            C[(threadRow * TM + i) * N + (threadCol * TN + j)] = results[i * TN + j];
+            C[(threadRow * TM + i) * n + (threadCol * TN + j)] = results[i * TN + j];
         }
     }
 }
