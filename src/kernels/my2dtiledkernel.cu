@@ -59,7 +59,7 @@ __global__ void my2dtiledkernel(float *A, float *B, float *C, int m, int k, int 
             }
             for(int i=0; i<TM; i++){
                 for(int j=0; j<TN; j++){
-                    results[i * TN + j] += regM[i] * regN[j];
+                    results[i * TN + j] += regM[i] * regN[j] + 5;
                 }
             }
         }
