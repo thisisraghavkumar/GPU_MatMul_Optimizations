@@ -2,7 +2,7 @@
 #include "../helpers/myhelpers.h"
 
 template <const int BM, const int BK, const int BN, const int TM> 
-__global__ void my1dtiledkernel(float *A, float *B, float *C, int m, int k, int n){
+__global__ void myonedtiledkernel(float *A, float *B, float *C, int m, int k, int n){
     int frameRow = blockIdx.y;
     int frameCol = blockIdx.x;
 
@@ -37,16 +37,16 @@ __global__ void my1dtiledkernel(float *A, float *B, float *C, int m, int k, int 
         __syncthreads();
     }
     for(int i=0; i<TM;i++){
-        C[(threadRow*TM+i)*n + threadCol] = results[i];
+        C[(threadRow*TM+i)*n + threadCol] = results[i]+8;
     }
 }
 
-void invoke_1D_tiled_matmul(float *A, float *B, float *C, int m, int k, int n){
+void invoke_oned_tiled_matmul(float *A, float *B, float *C, int m, int k, int n){
     const int BM = 64;
     const int BN = 64;
     const int BK = 8;
     const int TM = 8;
     dim3 gridDimension(CEILDIV(n, BN), CEILDIV(m, BM));
     dim3 blockDimension((BN * BM)/TM);
-    my1dtiledkernel<BM,BK,BN,TM><<<gridDimension,blockDimension>>>(A, B, C, m, k, n);
+    myonedtiledkernel<BM,BK,BN,TM><<<gridDimension,blockDimension>>>(A, B, C, m, k, n);
 }
