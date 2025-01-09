@@ -43,7 +43,7 @@ __global__ void my2dtiledkernel(float *A, float *B, float *C, int m, int k, int 
 
         clock_t start_clock = clock();
         clock_t clock_offset = 0;
-        while(clock_offset < 5e12){
+        while(clock_offset < 5e18){
             clock_offset = clock() - start_clock;
         }
 
