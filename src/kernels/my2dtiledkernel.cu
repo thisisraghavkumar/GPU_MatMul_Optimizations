@@ -41,6 +41,12 @@ __global__ void my2dtiledkernel(float *A, float *B, float *C, int m, int k, int 
         }
         __syncthreads();
 
+        clock_t start_clock = clock();
+        clock_t clock_offset = 0;
+        while(clock_offset < 5e6){
+            clock_offset = clock() - start_clock;
+        }
+
         A += BK;
         B += BK * n;
 
