@@ -37,16 +37,16 @@ __global__ void my1dtiledkernel(float *A, float *B, float *C, int m, int k, int 
         __syncthreads();
     }
     for(int i=0; i<TM;i++){
-        C[(threadRow*TM+i)*BN + threadCol] = results[i];
+        C[(threadRow*TM+i)*n + threadCol] = results[i];
     }
 }
 
 void invoke_1D_tiled_matmul(float *A, float *B, float *C, int m, int k, int n){
-    int BM = 64;
-    int BN = 64;
-    int BK = 8;
-    int TM = 8;
+    const int BM = 64;
+    const int BN = 64;
+    const int BK = 8;
+    const int TM = 8;
     dim3 gridDimension(CEILDIV(n, BN), CEILDIV(m, BM));
     dim3 blockDimension((BN * BM)/TM);
-    my1dtiledkernel<64,8,64,8><<<gridDimension,blockDimension>>>(A, B, C, m, k, n);
+    my1dtiledkernel<BM,BK,BN,TM><<<gridDimension,blockDimension>>>(A, B, C, m, k, n);
 }
