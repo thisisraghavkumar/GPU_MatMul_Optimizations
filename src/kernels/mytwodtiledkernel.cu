@@ -21,7 +21,7 @@ __global__ void mytwodtiledkernel(float *A, float *B, float *C, int m, int k, in
     int rowsForA = threadsNeeded / BK;
 
     int innerColB = threadIdx.x % BN;
-    int innerRowB = threadIdx.x / BK;
+    int innerRowB = threadIdx.x / BN;
     int rowsForB = threadsNeeded / BN;
 
     float results[TM * TN] = {0.0f};
@@ -40,12 +40,6 @@ __global__ void mytwodtiledkernel(float *A, float *B, float *C, int m, int k, in
             Bs[(innerRowB + i) * BN + innerColB] = B[(innerRowB + i) * n + innerColB];
         }
         __syncthreads();
-
-        clock_t start_clock = clock();
-        clock_t clock_offset = 0;
-        while(clock_offset < 5e18){
-            clock_offset = clock() - start_clock;
-        }
 
         A += BK;
         B += BK * n;

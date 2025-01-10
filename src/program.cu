@@ -134,8 +134,8 @@ int main(){
     std::cout<<"Shared Memory Kernel GFLOPS: "<<(numoperations / ((shared_memory_time/measurement_runs) / 1000)) / 1e9<<std::endl;
     std::cout<<"Time taken by 1-d tiled kernel: "<<oned_tiled_time/measurement_runs<<" ms"<<std::endl;
     std::cout<<"1D Tiled Kernel GFLOPS: "<<(numoperations / ((oned_tiled_time/measurement_runs) / 1000)) / 1e9<<std::endl;
-    //std::cout<<"Time taken by 2-d tiled kernel: "<<twod_tiled_time/measurement_runs<<" ms"<<std::endl;
-    //std::cout<<"2D Tiled Kernel GFLOPS: "<<(numoperations / ((twod_tiled_time/measurement_runs) / 1000)) / 1e9<<std::endl;
+    std::cout<<"Time taken by 2-d tiled kernel: "<<twod_tiled_time/measurement_runs<<" ms"<<std::endl;
+    std::cout<<"2D Tiled Kernel GFLOPS: "<<(numoperations / ((twod_tiled_time/measurement_runs) / 1000)) / 1e9<<std::endl;
     cudaFree(d_A);
     cudaFree(d_B);
     cudaFree(d_C);
