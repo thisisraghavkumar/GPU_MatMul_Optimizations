@@ -33,10 +33,10 @@ __global__ void mytwodtiledkernel(float *A, float *B, float *C, int m, int k, in
     C += (cRow * BM * n) + (cCol * BN);
 
     for(int bkId = 0; bkId < k; bkId+=BK){
-        for(int i=0; i<TM; i+=rowsForA){
+        for(int i=0; i<BM; i+=rowsForA){
             As[(innerRowA + i) * BK + innerColA] = A[(innerRowA + i) * k + innerColA];
         }
-        for(int i=0; i<TN; i+=rowsForB){
+        for(int i=0; i<BK; i+=rowsForB){
             Bs[(innerRowB + i) * BN + innerColB] = B[(innerRowB + i) * n + innerColB];
         }
         __syncthreads();
@@ -73,8 +73,8 @@ __global__ void mytwodtiledkernel(float *A, float *B, float *C, int m, int k, in
 }
 
 void invoke_twod_tiled_matmul(float *A, float *B, float *C, int m, int k, int n){
-    const int BM = 64;
-    const int BN = 64;
+    const int BM = 128;
+    const int BN = 128;
     const int BK = 8;
     const int TM = 8;
     const int TN = 8;

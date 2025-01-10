@@ -6,6 +6,17 @@
 #include <iomanip>
 #include <random>
 
+#define CUDA_CHECK(call) \
+    do { \
+        cudaError_t err = call; \
+        if (err != cudaSuccess) { \
+            fprintf(stderr, "CUDA error in file '%s' in line %i: %s.\n", \
+                    __FILE__, __LINE__, cudaGetErrorString(err)); \
+            exit(EXIT_FAILURE); \
+        } \
+    } while (0)
+
+
 /*
 * Function to populate an array of floats with random values
 */
@@ -100,7 +111,7 @@ int main(){
     float oned_tiled_time = run_kernel("1_d_tiled", invoke_oned_tiled_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
     float shared_memory_time = run_kernel("shared_memory", invoke_shared_memory_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
     float twod_tiled_time = run_kernel("2_d_tiled", invoke_twod_tiled_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
-    
+    CUDA_CHECK(cudaGetLastError());
     cudaEventRecord(cublasBeg);
     for(int i=0; i<measurement_runs; i++){
         invoke_cublas_kernel(d_A, d_B, d_C, m, k, n,handle);
@@ -123,8 +134,8 @@ int main(){
     std::cout<<"Shared Memory Kernel GFLOPS: "<<(numoperations / ((shared_memory_time/measurement_runs) / 1000)) / 1e9<<std::endl;
     std::cout<<"Time taken by 1-d tiled kernel: "<<oned_tiled_time/measurement_runs<<" ms"<<std::endl;
     std::cout<<"1D Tiled Kernel GFLOPS: "<<(numoperations / ((oned_tiled_time/measurement_runs) / 1000)) / 1e9<<std::endl;
-    std::cout<<"Time taken by 2-d tiled kernel: "<<twod_tiled_time/measurement_runs<<" ms"<<std::endl;
-    std::cout<<"2D Tiled Kernel GFLOPS: "<<(numoperations / ((twod_tiled_time/measurement_runs) / 1000)) / 1e9<<std::endl;
+    //std::cout<<"Time taken by 2-d tiled kernel: "<<twod_tiled_time/measurement_runs<<" ms"<<std::endl;
+    //std::cout<<"2D Tiled Kernel GFLOPS: "<<(numoperations / ((twod_tiled_time/measurement_runs) / 1000)) / 1e9<<std::endl;
     cudaFree(d_A);
     cudaFree(d_B);
     cudaFree(d_C);
