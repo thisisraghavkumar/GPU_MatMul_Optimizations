@@ -25,8 +25,8 @@ __global__ void mytwodtiledkernel(float *A, float *B, float *C, int m, int k, in
     int rowsForB = threadsNeeded / BN;
 
     float results[TM * TN] = {0.0f};
-    float regM[TM];
-    float regN[TN];
+    float regM[TM] = {0.0f};
+    float regN[TN] = {0.0f};
 
     A += (cRow * BM * k);
     B += (cCol * BN);
