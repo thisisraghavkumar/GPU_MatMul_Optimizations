@@ -1,7 +1,7 @@
 #include "mykernels.cuh"
 #include "../helpers/myhelpers.h"
 
-template <cont int BM, const int BN, const int BK, const int TM, const int TK>
+template <const int BM, const int BN, const int BK, const int TM, const int TN>
 __global__ void myvectorizedkernel(float *A, float *B, float *C, int m, int k, int n){
     const uint cRow = blockIdx.y;
     const uint cCol = blockIdx.x;
@@ -14,7 +14,7 @@ __global__ void myvectorizedkernel(float *A, float *B, float *C, int m, int k, i
 
     A += cRow * BM * k;
     B += cCol * BN;
-    C += cRow * BM * N + cCol * BN;
+    C += cRow * BM * n + cCol * BN;
 
     const uint innerRowA = threadIdx.x / (BK/4);
     const uint innerColA = threadIdx.x % (BK/4);
@@ -26,7 +26,7 @@ __global__ void myvectorizedkernel(float *A, float *B, float *C, int m, int k, i
     float regN[TN] = {0.0};
 
     for(uint bkId = 0; bkId < k; bkId += BK){
-        float4 tmp = reinterpret_cast<float4 *>(&A[innerRowA * K + innerColA * 4])[0];
+        float4 tmp = reinterpret_cast<float4 *>(&A[innerRowA * k + innerColA * 4])[0];
         As[(innerColA * 4 + 0) * BM + innerRowA] = tmp.x;
         As[(innerColA * 4 + 1) * BM + innerRowA] = tmp.y;
         As[(innerColA * 4 + 2) * BM + innerRowA] = tmp.z;
@@ -56,7 +56,7 @@ __global__ void myvectorizedkernel(float *A, float *B, float *C, int m, int k, i
     }
     for(int i=0; i<TM; ++i){
         for(int j=0; j<TN; j += 4){
-            float4 tmp = reinterpret_cast<float 4*>(
+            float4 tmp = reinterpret_cast<float4 *>(
                 &C[(threadRow * TM + i) * N + threadCol * TN + j]
             )[0];
             tmp.x = threadResults[i * TN + j];
@@ -71,7 +71,7 @@ __global__ void myvectorizedkernel(float *A, float *B, float *C, int m, int k, i
     }
 }
 
-invoke_vectorized_matmul(float *A, float *B, float *C, int m, int k, int n){
+void invoke_vectorized_matmul(float *A, float *B, float *C, int m, int k, int n){
     const int BM = 128;
     const int BN = 128;
     const int BK = 8;
