@@ -3,7 +3,10 @@
 
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
+#include <nvtx3/nvToolsExt.h>
 #include <random>
+#include <iostream>
+#include <iomanip>
 
 void invoke_cublas_kernel(float *A, float *B, float *C, int m, int k, int n, cublasHandle_t &handle);
 void invoke_naive_matmul(float *A, float *B, float *C, int m, int k, int n);
