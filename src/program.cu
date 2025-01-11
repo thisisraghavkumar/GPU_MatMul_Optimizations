@@ -181,6 +181,7 @@ int main()
     cudaEventSynchronize(beg);
     cudaEventSynchronize(end);
     cudaEventElapsedTime(&naive_time, beg, end);
+    std::cout<<"Naive kernel : "<<naive_time<<" / "<<measurement_runs<<" = "<<naive_time/measurement_runs<<"\n";
     
     invoke_rowmajor_matmul(d_A, d_B, d_C, m, k, n);
     cudaDeviceSynchronize();
@@ -193,7 +194,8 @@ int main()
     cudaEventSynchronize(beg);
     cudaEventSynchronize(end);
     cudaEventElapsedTime(&row_coalesce_time, beg, end);
-    
+    std::cout<<"Coalesced memory access : "<<row_coalesce_time<<" / "<<measurement_runs<<" = "<<row_coalesce_time/measurement_runs<<"\n";
+
     invoke_shared_memory_matmul(d_A, d_B, d_C, m, k, n);
     cudaDeviceSynchronize();
     cudaEventRecord(beg);
@@ -205,6 +207,7 @@ int main()
     cudaEventSynchronize(beg);
     cudaEventSynchronize(end);
     cudaEventElapsedTime(&shared_memory_time, beg, end);
+    std::cout<<"Shared memory access : "<<shared_memory_time<<" / "<<measurement_runs<<" = "<<shared_memory_time/measurement_runs<<"\n";
 
     invoke_oned_tiled_matmul(d_A, d_B, d_C, m, k, n);
     cudaDeviceSynchronize();
@@ -217,6 +220,7 @@ int main()
     cudaEventSynchronize(beg);
     cudaEventSynchronize(end);
     cudaEventElapsedTime(&oned_tiled_time, beg, end);
+    std::cout<<"One D tiled access : "<<oned_tiled_time<<" / "<<measurement_runs<<" = "<<oned_tiled_time/measurement_runs<<"\n";
 
     invoke_twod_tiled_matmul(d_A, d_B, d_C, m, k, n);
     cudaDeviceSynchronize();
@@ -229,6 +233,7 @@ int main()
     cudaEventSynchronize(beg);
     cudaEventSynchronize(end);
     cudaEventElapsedTime(&twod_tiled_time, beg, end);
+    std::cout<<"Two D tiled access : "<<twod_tiled_time<<" / "<<measurement_runs<<" = "<<twod_tiled_time/measurement_runs<<"\n";
 
     invoke_vectorized_matmul(d_A, d_B, d_C, m, k, n);
     cudaDeviceSynchronize();
@@ -241,6 +246,7 @@ int main()
     cudaEventSynchronize(beg);
     cudaEventSynchronize(end);
     cudaEventElapsedTime(&vectorized_time, beg, end);
+    std::cout<<"Vectorized access : "<<vectorized_time<<" / "<<measurement_runs<<" = "<<vectorized_time/measurement_runs<<"\n";
 
     auto printRow = [](const std::string &name, float time, long long ops, int runs)
     {
