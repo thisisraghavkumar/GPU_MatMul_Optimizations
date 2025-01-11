@@ -129,72 +129,72 @@ int main()
     cudaEventSynchronize(cublasEnd);
     cudaEventElapsedTime(&cublas_elapsed_time, cublasBeg, cublasEnd);
 
-    invoke_naive_matmul(d_A, d_B, d_C, m, k, n, handle);
+    invoke_naive_matmul(d_A, d_B, d_C, m, k, n);
     cudaDeviceSynchronize();
     cudaEventRecord(beg);
     for (int i = 0; i < measurement_runs; i++)
     {
-        invoke_naive_matmul(d_A, d_B, d_C, m, k, n, handle);
+        invoke_naive_matmul(d_A, d_B, d_C, m, k, n);
     }
     cudaEventRecord(end);
     cudaEventSynchronize(beg);
     cudaEventSynchronize(end);
     cudaEventElapsedTime(&naive_time, beg, end);
     
-    invoke_rowmajor_matmul(d_A, d_B, d_C, m, k, n, handle);
+    invoke_rowmajor_matmul(d_A, d_B, d_C, m, k, n);
     cudaDeviceSynchronize();
     cudaEventRecord(beg);
     for (int i = 0; i < measurement_runs; i++)
     {
-        invoke_rowmajor_matmul(d_A, d_B, d_C, m, k, n, handle);
+        invoke_rowmajor_matmul(d_A, d_B, d_C, m, k, n);
     }
     cudaEventRecord(end);
     cudaEventSynchronize(beg);
     cudaEventSynchronize(end);
     cudaEventElapsedTime(&row_coalesce_time, beg, end);
     
-    invoke_shared_memory_matmul(d_A, d_B, d_C, m, k, n, handle);
+    invoke_shared_memory_matmul(d_A, d_B, d_C, m, k, n);
     cudaDeviceSynchronize();
     cudaEventRecord(beg);
     for (int i = 0; i < measurement_runs; i++)
     {
-        invoke_shared_memory_matmul(d_A, d_B, d_C, m, k, n, handle);
+        invoke_shared_memory_matmul(d_A, d_B, d_C, m, k, n);
     }
     cudaEventRecord(end);
     cudaEventSynchronize(beg);
     cudaEventSynchronize(end);
     cudaEventElapsedTime(&shared_memory_time, beg, end);
 
-    invoke_oned_tiled_matmul(d_A, d_B, d_C, m, k, n, handle);
+    invoke_oned_tiled_matmul(d_A, d_B, d_C, m, k, n);
     cudaDeviceSynchronize();
     cudaEventRecord(beg);
     for (int i = 0; i < measurement_runs; i++)
     {
-        invoke_oned_tiled_matmul(d_A, d_B, d_C, m, k, n, handle);
+        invoke_oned_tiled_matmul(d_A, d_B, d_C, m, k, n);
     }
     cudaEventRecord(end);
     cudaEventSynchronize(beg);
     cudaEventSynchronize(end);
     cudaEventElapsedTime(&oned_tiled_time, beg, end);
 
-    invoke_twod_tiled_matmul(d_A, d_B, d_C, m, k, n, handle);
+    invoke_twod_tiled_matmul(d_A, d_B, d_C, m, k, n);
     cudaDeviceSynchronize();
     cudaEventRecord(beg);
     for (int i = 0; i < measurement_runs; i++)
     {
-        invoke_twod_tiled_matmul(d_A, d_B, d_C, m, k, n, handle);
+        invoke_twod_tiled_matmul(d_A, d_B, d_C, m, k, n);
     }
     cudaEventRecord(end);
     cudaEventSynchronize(beg);
     cudaEventSynchronize(end);
     cudaEventElapsedTime(&twod_tiled_time, beg, end);
 
-    invoke_vectorized_matmul(d_A, d_B, d_C, m, k, n, handle);
+    invoke_vectorized_matmul(d_A, d_B, d_C, m, k, n);
     cudaDeviceSynchronize();
     cudaEventRecord(beg);
     for (int i = 0; i < measurement_runs; i++)
     {
-        invoke_vectorized_matmul(d_A, d_B, d_C, m, k, n, handle);
+        invoke_vectorized_matmul(d_A, d_B, d_C, m, k, n);
     }
     cudaEventRecord(end);
     cudaEventSynchronize(beg);
