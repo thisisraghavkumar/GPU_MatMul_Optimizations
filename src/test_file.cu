@@ -21,6 +21,7 @@ void populate_array(float *arr, int size, std::mt19937 &gen, std::uniform_real_d
     }
 }
 
+// Kernel 2
 template <const uint BLOCKSIZE>
 __global__ void sgemm_global_mem_coalesce(int M, int N, int K, float alpha,
                                           const float *A, const float *B,
@@ -67,6 +68,139 @@ void invoke_rowmajor_matmul(float *A, float *B, float *C, int m, int k, int n){
     myRowCoalesceKernel<32><<<gridSize, blockSize>>>(A, B, C, m, k, n);
 }
 
+// Kernel 4
+template <const int BM, const int BK, const int BN, const int TM> 
+__global__ void myonedtiledkernel(float *A, float *B, float *C, int m, int k, int n){
+    int frameRow = blockIdx.y;
+    int frameCol = blockIdx.x;
+
+    __shared__ float As[BM*BK];
+    __shared__ float Bs[BK*BN];
+
+    int threadRow = threadIdx.x / BN;
+    int threadCol = threadIdx.x % BN;
+    int ARow = threadIdx.x / BK;
+    int ACol = threadIdx.x % BK;
+    int BRow = threadIdx.x / BN;
+    int BCol = threadIdx.x % BN;
+
+    A += (frameRow * BM * k);
+    B += (frameCol * BN);
+    C += (frameRow * BM * n) + (frameCol * BN);
+
+    float results[TM] = {0.0f};
+    for(int idx=0;idx<k;idx+=BK){
+        As[ARow * BK + ACol] = A[ARow * k + ACol];
+        Bs[BRow * BN + BCol] = B[BRow * n + BCol];
+        __syncthreads();
+
+        A += BK;
+        B += (BK * n);
+        for(int l=0; l<BK; l++){
+            float temp = Bs[l * BN + threadCol];
+            for(int i=0; i<TM; i++){
+                results[i] += As[(threadRow * TM + i) * BK + l] * temp;
+            }
+        }
+        __syncthreads();
+    }
+    for(int i=0; i<TM;i++){
+        C[(threadRow*TM+i)*n + threadCol] = results[i];
+    }
+}
+
+void invoke_oned_tiled_matmul(float *A, float *B, float *C, int m, int k, int n){
+    const int BM = 64;
+    const int BN = 64;
+    const int BK = 8;
+    const int TM = 8;
+    dim3 gridDimension(CEILDIV(n, BN), CEILDIV(m, BM));
+    dim3 blockDimension((BN * BM)/TM);
+    myonedtiledkernel<BM,BK,BN,TM><<<gridDimension,blockDimension>>>(A, B, C, m, k, n);
+}
+
+template <const int BM, const int BN, const int BK, const int TM>
+__global__ void sgemm1DBlocktiling(int M, int N, int K, float alpha,
+                                   const float *A, const float *B, float beta,
+                                   float *C) {
+  // If we flip x and y here we get ~30% less performance for large matrices.
+  // The current, 30% faster configuration ensures that blocks with sequential
+  // blockIDs access columns of B sequentially, while sharing the same row of A.
+  // The slower configuration would share columns of A, but access into B would
+  // be non-sequential. So the faster configuration has better spatial locality
+  // and hence a greater L2 hit rate.
+  const uint cRow = blockIdx.y;
+  const uint cCol = blockIdx.x;
+
+  // each warp will calculate 32*TM elements, with 32 being the columnar dim.
+  const int threadCol = threadIdx.x % BN;
+  const int threadRow = threadIdx.x / BN;
+
+  // allocate space for the current blocktile in SMEM
+  __shared__ float As[BM * BK];
+  __shared__ float Bs[BK * BN];
+
+  // Move blocktile to beginning of A's row and B's column
+  A += cRow * BM * K;
+  B += cCol * BN;
+  C += cRow * BM * N + cCol * BN;
+
+  // todo: adjust this to each thread to load multiple entries and
+  // better exploit the cache sizes
+  assert(BM * BK == blockDim.x);
+  assert(BN * BK == blockDim.x);
+  const uint innerColA = threadIdx.x % BK; // warp-level GMEM coalescing
+  const uint innerRowA = threadIdx.x / BK;
+  const uint innerColB = threadIdx.x % BN; // warp-level GMEM coalescing
+  const uint innerRowB = threadIdx.x / BN;
+
+  // allocate thread-local cache for results in registerfile
+  float threadResults[TM] = {0.0};
+
+  // outer loop over block tiles
+  for (uint bkIdx = 0; bkIdx < K; bkIdx += BK) {
+    // populate the SMEM caches
+    As[innerRowA * BK + innerColA] = A[innerRowA * K + innerColA];
+    Bs[innerRowB * BN + innerColB] = B[innerRowB * N + innerColB];
+    __syncthreads();
+
+    // advance blocktile
+    A += BK;
+    B += BK * N;
+
+    // calculate per-thread results
+    for (uint dotIdx = 0; dotIdx < BK; ++dotIdx) {
+      // we make the dotproduct loop the outside loop, which facilitates
+      // reuse of the Bs entry, which we can cache in a tmp var.
+      float tmpB = Bs[dotIdx * BN + threadCol];
+      for (uint resIdx = 0; resIdx < TM; ++resIdx) {
+        threadResults[resIdx] +=
+            As[(threadRow * TM + resIdx) * BK + dotIdx] * tmpB;
+      }
+    }
+    __syncthreads();
+  }
+
+  // write out the results
+  for (uint resIdx = 0; resIdx < TM; ++resIdx) {
+    C[(threadRow * TM + resIdx) * N + threadCol] =
+        alpha * threadResults[resIdx] +
+        beta * C[(threadRow * TM + resIdx) * N + threadCol];
+  }
+}
+
+void runSgemm1DBlocktiling(int M, int N, int K, float alpha, float *A, float *B,
+                           float beta, float *C) {
+  const uint BM = 64;
+  const uint BN = 64;
+  const uint BK = 8;
+  const uint TM = 8;
+  dim3 gridDim(CEIL_DIV(N, BN), CEIL_DIV(M, BM));
+  dim3 blockDim((BM * BN) / TM);
+  sgemm1DBlocktiling<BM, BN, BK, TM>
+      <<<gridDim, blockDim>>>(M, N, K, alpha, A, B, beta, C);
+}
+
 int main(){
     int m = MMM;
     int n = MMN;
@@ -110,9 +244,10 @@ int main(){
     cudaEventCreate(&refbeg);
     cudaEventCreate(&refend);
 
+    // Calling kernel 2
     invoke_rowmajor_matmul(d_A, d_B, d_C, m, k, n);
     run_sgemm_coalesce(m,n,k,1.0f,d_A,d_B,0.0f,d_C);
-
+    cout<<"Kernel 2 : Global coalesced memory\n";
     cudaEventRecord(refbeg);
     for(int i=0; i<measurement_runs; ++i){
         run_sgemm_coalesce(m,n,k,1.0f,d_A,d_B,0.0f,d_C);
@@ -133,6 +268,30 @@ int main(){
     cudaEventElapsedTime(&myelapsed_time, mybeg, myend);
     std::cout<<"My implementation: "<<myelapsed_time<<" / "<<measurement_runs<<" = "<<myelapsed_time/measurement_runs<<"\n";
     
+    // Calling kernel 4
+    runSgemm1DBlocktiling(m,n,k,1.0f,d_A,d_B,0.0f,d_C);
+    invoke_oned_tiled_matmul(d_A, d_B, d_C, m, k, n);
+    cout<<"Kernel 4 : 1D Block tiling\n";
+    cudaEventRecord(refbeg);
+    for(int i=0; i<measurement_runs; ++i){
+        runSgemm1DBlocktiling(m,n,k,1.0f,d_A,d_B,0.0f,d_C);
+    }
+    cudaEventRecord(refend);
+    cudaEventSynchronize(refbeg);
+    cudaEventSynchronize(refend);
+    cudaEventElapsedTime(&refelapsed_time, refbeg, refend);
+    std::cout<<"Ref implementation: "<<refelapsed_time<<" / "<<measurement_runs<<" = "<<refelapsed_time/measurement_runs<<"\n";
+
+    cudaEventRecord(mybeg);
+    for(int i=0; i<measurement_runs; ++i){
+        invoke_oned_tiled_matmul(d_A, d_B, d_C, m, k, n);
+    }
+    cudaEventRecord(myend);
+    cudaEventSynchronize(mybeg);
+    cudaEventSynchronize(myend);
+    cudaEventElapsedTime(&myelapsed_time, mybeg, myend);
+    std::cout<<"My implementation: "<<myelapsed_time<<" / "<<measurement_runs<<" = "<<myelapsed_time/measurement_runs<<"\n";
+
     cudaFree(d_A);
     cudaFree(d_B);
     cudaFree(d_C);
