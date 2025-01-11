@@ -18,47 +18,6 @@
         }                                                                \
     } while (0)
 
-//Kernel 1
-__global__ void mynaivekernel(float *A, float *B, float *C, int m, int k, int n){
-    int firstrow = blockIdx.y * blockDim.y + threadIdx.y;
-    int secondcol = blockIdx.x * blockDim.x + threadIdx.x;
-    
-    if(firstrow < m && secondcol < n){
-        float sum = 0.0f;
-        for(int i=0; i<k; i++){
-            sum += A[firstrow * k + i] * B[i*n + secondcol];
-        }
-        C[firstrow * n + secondcol] = sum;
-    }
-}
-
-void invoke_naive_matmul(float *A, float *B, float *C, int m, int k, int n){
-    dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE);
-    dim3 gridSize(CEILDIV(n, BLOCK_SIZE), CEILDIV(m, BLOCK_SIZE));
-
-    mynaivekernel<<<gridSize, blockSize>>>(A, B, C, m, k, n);
-}
-
-__global__ void myRowCoalesceKernel(float *A, float *B, float *C, int m, int k, int n){
-    int firstRow = blockIdx.x * BLOCK_SIZE + threadIdx.x/blockDim.x;
-    int secondCol = blockIdx.y * BLOCK_SIZE + threadIdx.x%blockDim.x;
-
-    if(firstRow < m && secondCol < n){
-        float sum = 0.0f;
-        for(int i=0; i<k; i++){
-            sum += A[firstRow * k + i] * B[i * n + secondCol];
-        }
-        C[firstRow * n + secondCol] = sum;
-    }
-}
-
-void invoke_rowmajor_matmul(float *A, float *B, float *C, int m, int k, int n){
-    dim3 blockSize(BLOCK_SIZE*BLOCK_SIZE);
-    dim3 gridSize(CEILDIV(m, BLOCK_SIZE), CEILDIV(n, BLOCK_SIZE));
-
-    myRowCoalesceKernel<<<gridSize, blockSize>>>(A, B, C, m, k, n);
-}
-
 /*
  * Function to populate an array of floats with random values
  */
@@ -143,24 +102,23 @@ int main()
     cudaEventCreate(&cublasBeg);
     cudaEventCreate(&cublasEnd);
 
-    //cublasHandle_t handle;
-    //cublasCreate(&handle);
+    cublasHandle_t handle;
+    cublasCreate(&handle);
 
-    //invoke_cublas_kernel(d_A, d_B, d_C, m, k, n, handle);
-    //cudaDeviceSynchronize();
-    //cudaMemcpy(h_C_cublas, d_C, sF * sizeC, cudaMemcpyDeviceToHost);
+    invoke_cublas_kernel(d_A, d_B, d_C, m, k, n, handle);
+    cudaDeviceSynchronize();
+    cudaMemcpy(h_C_cublas, d_C, sF * sizeC, cudaMemcpyDeviceToHost);
 
-    float naive_time;// = run_kernel("naive", invoke_naive_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
-    float row_coalesce_time;// = run_kernel("row_coalesce", invoke_rowmajor_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
-    float shared_memory_time;// = run_kernel("shared_memory", invoke_shared_memory_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
-    float oned_tiled_time;// = run_kernel("1_d_tiled", invoke_oned_tiled_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
-    float twod_tiled_time;// = run_kernel("2_d_tiled", invoke_twod_tiled_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
-    float vectorized_time;// = run_kernel("vectorized", invoke_vectorized_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
-    float parameterized_time;// = run_kernel("parameterized", invoke_parameterized_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
+    float naive_time = run_kernel("naive", invoke_naive_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
+    float row_coalesce_time = run_kernel("row_coalesce", invoke_rowmajor_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
+    float shared_memory_time = run_kernel("shared_memory", invoke_shared_memory_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
+    float oned_tiled_time = run_kernel("1_d_tiled", invoke_oned_tiled_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
+    float twod_tiled_time = run_kernel("2_d_tiled", invoke_twod_tiled_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
+    float vectorized_time = run_kernel("vectorized", invoke_vectorized_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
+    float parameterized_time = run_kernel("parameterized", invoke_parameterized_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
 
     CUDA_CHECK(cudaGetLastError());
-    //cudaEventRecord(cublasBeg);
-    /*
+    cudaEventRecord(cublasBeg);
     for (int i = 0; i < measurement_runs; i++)
     {
         invoke_cublas_kernel(d_A, d_B, d_C, m, k, n, handle);
@@ -170,85 +128,6 @@ int main()
     cudaEventSynchronize(cublasBeg);
     cudaEventSynchronize(cublasEnd);
     cudaEventElapsedTime(&cublas_elapsed_time, cublasBeg, cublasEnd);
-    */
-    /*
-    invoke_naive_matmul(d_A, d_B, d_C, m, k, n);
-    cudaDeviceSynchronize();
-    cudaEventRecord(beg);
-    for (int i = 0; i < measurement_runs; i++)
-    {
-        invoke_naive_matmul(d_A, d_B, d_C, m, k, n);
-    }
-    cudaEventRecord(end);
-    cudaEventSynchronize(beg);
-    cudaEventSynchronize(end);
-    cudaEventElapsedTime(&naive_time, beg, end);
-    std::cout<<"Naive kernel : "<<naive_time<<" / "<<measurement_runs<<" = "<<naive_time/measurement_runs<<"\n";
-    */
-    invoke_rowmajor_matmul(d_A, d_B, d_C, m, k, n);
-    cudaDeviceSynchronize();
-    cudaEventRecord(beg);
-    for (int i = 0; i < measurement_runs; i++)
-    {
-        invoke_rowmajor_matmul(d_A, d_B, d_C, m, k, n);
-    }
-    cudaEventRecord(end);
-    cudaEventSynchronize(beg);
-    cudaEventSynchronize(end);
-    cudaEventElapsedTime(&row_coalesce_time, beg, end);
-    std::cout<<"Coalesced memory access : "<<row_coalesce_time<<" / "<<measurement_runs<<" = "<<row_coalesce_time/measurement_runs<<"\n";
-
-    invoke_shared_memory_matmul(d_A, d_B, d_C, m, k, n);
-    cudaDeviceSynchronize();
-    cudaEventRecord(beg);
-    for (int i = 0; i < measurement_runs; i++)
-    {
-        invoke_shared_memory_matmul(d_A, d_B, d_C, m, k, n);
-    }
-    cudaEventRecord(end);
-    cudaEventSynchronize(beg);
-    cudaEventSynchronize(end);
-    cudaEventElapsedTime(&shared_memory_time, beg, end);
-    std::cout<<"Shared memory access : "<<shared_memory_time<<" / "<<measurement_runs<<" = "<<shared_memory_time/measurement_runs<<"\n";
-
-    invoke_oned_tiled_matmul(d_A, d_B, d_C, m, k, n);
-    cudaDeviceSynchronize();
-    cudaEventRecord(beg);
-    for (int i = 0; i < measurement_runs; i++)
-    {
-        invoke_oned_tiled_matmul(d_A, d_B, d_C, m, k, n);
-    }
-    cudaEventRecord(end);
-    cudaEventSynchronize(beg);
-    cudaEventSynchronize(end);
-    cudaEventElapsedTime(&oned_tiled_time, beg, end);
-    std::cout<<"One D tiled access : "<<oned_tiled_time<<" / "<<measurement_runs<<" = "<<oned_tiled_time/measurement_runs<<"\n";
-
-    invoke_twod_tiled_matmul(d_A, d_B, d_C, m, k, n);
-    cudaDeviceSynchronize();
-    cudaEventRecord(beg);
-    for (int i = 0; i < measurement_runs; i++)
-    {
-        invoke_twod_tiled_matmul(d_A, d_B, d_C, m, k, n);
-    }
-    cudaEventRecord(end);
-    cudaEventSynchronize(beg);
-    cudaEventSynchronize(end);
-    cudaEventElapsedTime(&twod_tiled_time, beg, end);
-    std::cout<<"Two D tiled access : "<<twod_tiled_time<<" / "<<measurement_runs<<" = "<<twod_tiled_time/measurement_runs<<"\n";
-
-    invoke_vectorized_matmul(d_A, d_B, d_C, m, k, n);
-    cudaDeviceSynchronize();
-    cudaEventRecord(beg);
-    for (int i = 0; i < measurement_runs; i++)
-    {
-        invoke_vectorized_matmul(d_A, d_B, d_C, m, k, n);
-    }
-    cudaEventRecord(end);
-    cudaEventSynchronize(beg);
-    cudaEventSynchronize(end);
-    cudaEventElapsedTime(&vectorized_time, beg, end);
-    std::cout<<"Vectorized access : "<<vectorized_time<<" / "<<measurement_runs<<" = "<<vectorized_time/measurement_runs<<"\n";
 
     auto printRow = [](const std::string &name, float time, long long ops, int runs)
     {
@@ -271,14 +150,14 @@ int main()
     std::cout << std::string(60, '-') << std::endl;
 
     // Print rows for each kernel
-    //printRow("CuBLAS", cublas_elapsed_time, numoperations, measurement_runs);
-    //printRow("Naive Kernel", naive_time, numoperations, measurement_runs);
+    printRow("CuBLAS", cublas_elapsed_time, numoperations, measurement_runs);
+    printRow("Naive Kernel", naive_time, numoperations, measurement_runs);
     printRow("Row Coalesce", row_coalesce_time, numoperations, measurement_runs);
     printRow("Shared Memory", shared_memory_time, numoperations, measurement_runs);
     printRow("1D Tiled", oned_tiled_time, numoperations, measurement_runs);
     printRow("2D Tiled", twod_tiled_time, numoperations, measurement_runs);
     printRow("Vectorized", vectorized_time, numoperations, measurement_runs);
-    //printRow("Parameterized", parameterized_time, numoperations, measurement_runs);
+    printRow("Parameterized", parameterized_time, numoperations, measurement_runs);
 
     std::cout << std::string(60, '-') << std::endl; // End separator
 
