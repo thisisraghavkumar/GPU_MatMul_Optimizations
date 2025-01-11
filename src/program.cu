@@ -1,9 +1,5 @@
 #include "kernels/mykernels.cuh"
-#include "helpers/myhelpers.h"
 #include <algorithm>
-#include <cuda_runtime.h>
-#include <iostream>
-#include <iomanip>
 #include <random>
 
 #define CUDA_CHECK(call)                                                 \

@@ -1,5 +1,4 @@
 #include "mykernels.cuh"
-#include "../helpers/myhelpers.h"
 
 template <const int BM, const int BN, const int BK, const int TM, const int TN>
 __global__ void myvectorizedkernel(float *A, float *B, float *C, int m, int k, int n){
