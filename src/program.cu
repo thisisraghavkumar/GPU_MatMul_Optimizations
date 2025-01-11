@@ -143,12 +143,12 @@ int main()
     cudaEventCreate(&cublasBeg);
     cudaEventCreate(&cublasEnd);
 
-    cublasHandle_t handle;
-    cublasCreate(&handle);
+    //cublasHandle_t handle;
+    //cublasCreate(&handle);
 
-    invoke_cublas_kernel(d_A, d_B, d_C, m, k, n, handle);
-    cudaDeviceSynchronize();
-    cudaMemcpy(h_C_cublas, d_C, sF * sizeC, cudaMemcpyDeviceToHost);
+    //invoke_cublas_kernel(d_A, d_B, d_C, m, k, n, handle);
+    //cudaDeviceSynchronize();
+    //cudaMemcpy(h_C_cublas, d_C, sF * sizeC, cudaMemcpyDeviceToHost);
 
     float naive_time;// = run_kernel("naive", invoke_naive_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
     float row_coalesce_time;// = run_kernel("row_coalesce", invoke_rowmajor_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
@@ -159,7 +159,8 @@ int main()
     float parameterized_time;// = run_kernel("parameterized", invoke_parameterized_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
 
     CUDA_CHECK(cudaGetLastError());
-    cudaEventRecord(cublasBeg);
+    //cudaEventRecord(cublasBeg);
+    /*
     for (int i = 0; i < measurement_runs; i++)
     {
         invoke_cublas_kernel(d_A, d_B, d_C, m, k, n, handle);
@@ -169,7 +170,8 @@ int main()
     cudaEventSynchronize(cublasBeg);
     cudaEventSynchronize(cublasEnd);
     cudaEventElapsedTime(&cublas_elapsed_time, cublasBeg, cublasEnd);
-
+    */
+    /*
     invoke_naive_matmul(d_A, d_B, d_C, m, k, n);
     cudaDeviceSynchronize();
     cudaEventRecord(beg);
@@ -182,7 +184,7 @@ int main()
     cudaEventSynchronize(end);
     cudaEventElapsedTime(&naive_time, beg, end);
     std::cout<<"Naive kernel : "<<naive_time<<" / "<<measurement_runs<<" = "<<naive_time/measurement_runs<<"\n";
-    
+    */
     invoke_rowmajor_matmul(d_A, d_B, d_C, m, k, n);
     cudaDeviceSynchronize();
     cudaEventRecord(beg);
@@ -269,8 +271,8 @@ int main()
     std::cout << std::string(60, '-') << std::endl;
 
     // Print rows for each kernel
-    printRow("CuBLAS", cublas_elapsed_time, numoperations, measurement_runs);
-    printRow("Naive Kernel", naive_time, numoperations, measurement_runs);
+    //printRow("CuBLAS", cublas_elapsed_time, numoperations, measurement_runs);
+    //printRow("Naive Kernel", naive_time, numoperations, measurement_runs);
     printRow("Row Coalesce", row_coalesce_time, numoperations, measurement_runs);
     printRow("Shared Memory", shared_memory_time, numoperations, measurement_runs);
     printRow("1D Tiled", oned_tiled_time, numoperations, measurement_runs);
