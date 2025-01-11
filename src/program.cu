@@ -115,7 +115,8 @@ int main()
     float oned_tiled_time = run_kernel("1_d_tiled", invoke_oned_tiled_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
     float twod_tiled_time = run_kernel("2_d_tiled", invoke_twod_tiled_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
     float vectorized_time = run_kernel("vectorized", invoke_vectorized_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
-
+    float parameterized_time = run_kernel("parameterized", invoke_parameterized_matmul<64,64,16,4,4>, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
+    
     CUDA_CHECK(cudaGetLastError());
     cudaEventRecord(cublasBeg);
     for (int i = 0; i < measurement_runs; i++)
@@ -156,7 +157,8 @@ int main()
     printRow("1D Tiled", oned_tiled_time, numoperations, measurement_runs);
     printRow("2D Tiled", twod_tiled_time, numoperations, measurement_runs);
     printRow("Vectorized", vectorized_time, numoperations, measurement_runs);
-
+    printRow("Parameterized", parameterized_time, numoperations, measurement_runs);
+    
     std::cout << std::string(60, '-') << std::endl; // End separator
 
     cudaFree(d_A);
