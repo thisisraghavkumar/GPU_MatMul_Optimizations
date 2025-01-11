@@ -32,7 +32,6 @@ float run_kernel(const char* kernel_name, void (*invoke_kernel)(float *, float *
     for(int i=0; i<warmup_runs-1; i++){
         invoke_kernel(d_A, d_B, d_C, m, k, n);
     }
- 
     cudaEventRecord(beg);
     nvtxRangePush(kernel_name);
     for(int i=0; i<measurement_runs; i++){
@@ -44,6 +43,5 @@ float run_kernel(const char* kernel_name, void (*invoke_kernel)(float *, float *
     cudaEventSynchronize(beg);
     cudaEventSynchronize(end);
     cudaEventElapsedTime(&elapsed_time, beg, end);
-    std::cout<<"Invoking kernel "<<reinterpret_cast<void*>(invoke_kernel)<<" time taken: "<<elapsed_time<<std::endl;
     return elapsed_time;
 }

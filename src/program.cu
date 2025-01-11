@@ -111,7 +111,7 @@ int main(){
     float oned_tiled_time = run_kernel("1_d_tiled", invoke_oned_tiled_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
     float shared_memory_time = run_kernel("shared_memory", invoke_shared_memory_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
     float twod_tiled_time = run_kernel("2_d_tiled", invoke_twod_tiled_matmul, d_A, d_B, d_C, m, k, n, h_C, h_C_cublas, gen, warmup_runs, measurement_runs);
-    CUDA_CHECK(cudaGetLastError());
+    //CUDA_CHECK(cudaGetLastError());
     cudaEventRecord(cublasBeg);
     for(int i=0; i<measurement_runs; i++){
         invoke_cublas_kernel(d_A, d_B, d_C, m, k, n,handle);
