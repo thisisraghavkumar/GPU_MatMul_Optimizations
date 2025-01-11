@@ -1,4 +1,5 @@
 #include "mykernels.cuh"
+#include "../helpers/myhelpers.h"
 
 template <const int BM, const int BN, const int BK, const int TM, const int TN>
 __global__ void myvectorizedkernel(float *A, float *B, float *C, int m, int k, int n){
@@ -78,13 +79,6 @@ void invoke_vectorized_matmul(float *A, float *B, float *C, int m, int k, int n)
     const int TN = 8;
 
     dim3 gridDim(CEILDIV(n,BN),CEILDIV(m,BM));
-    dim3 blockDim((BM * BN)/(TM * TN));
-
-    myvectorizedkernel<BM, BN, BK, TM, TN><<<gridDim, blockDim>>>(A, B, C, m, k, n);
-}
-
-template <const int BM, const int BN, const int BK, const int TM, const int TN> void invoke_parameterized_vectorized_matmul(float *A, float *B, float *C, int m, int k, int n){
-    dim3 gridDim(CEILDIV(n, BN), CEILDIV(m, BM));
     dim3 blockDim((BM * BN)/(TM * TN));
 
     myvectorizedkernel<BM, BN, BK, TM, TN><<<gridDim, blockDim>>>(A, B, C, m, k, n);

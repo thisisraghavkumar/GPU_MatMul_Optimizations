@@ -1,4 +1,6 @@
 #include "mykernels.cuh"
+#include "../helpers/myhelpers.h"
+#include <cuda_runtime.h>
 
 __global__ void mynaivekernel(float *A, float *B, float *C, int m, int k, int n){
     int firstrow = blockIdx.y * blockDim.y + threadIdx.y;

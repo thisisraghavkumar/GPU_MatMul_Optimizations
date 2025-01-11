@@ -1,4 +1,5 @@
 #include "mykernels.cuh"
+#include "../helpers/myhelpers.h"
 
 __global__ void shared_memory_kernel(float *A, float *B, float *C, int m, int k, int n){
     int frameRow = blockIdx.x;

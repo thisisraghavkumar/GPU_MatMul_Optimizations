@@ -1,4 +1,5 @@
 #include "mykernels.cuh"
+#include "../helpers/myhelpers.h"
 
 template <const int BM, const int BK, const int BN, const int TM> 
 __global__ void myonedtiledkernel(float *A, float *B, float *C, int m, int k, int n){
