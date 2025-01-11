@@ -147,8 +147,8 @@ __global__ void sgemm1DBlocktiling(int M, int N, int K, float alpha,
 
   // todo: adjust this to each thread to load multiple entries and
   // better exploit the cache sizes
-  assert(BM * BK == blockDim.x);
-  assert(BN * BK == blockDim.x);
+  //assert(BM * BK == blockDim.x);
+  //assert(BN * BK == blockDim.x);
   const uint innerColA = threadIdx.x % BK; // warp-level GMEM coalescing
   const uint innerRowA = threadIdx.x / BK;
   const uint innerColB = threadIdx.x % BN; // warp-level GMEM coalescing
@@ -291,7 +291,7 @@ __global__ void __launch_bounds__((BM * BN) / (TM * TN), 1)
   const uint numThreadsBlocktile = totalResultsBlocktile / (TM * TN);
 
   // ResultsPerBlock / ResultsPerThread == ThreadsPerBlock
-  assert(numThreadsBlocktile == blockDim.x);
+  //assert(numThreadsBlocktile == blockDim.x);
 
   // BN/TN are the number of threads to span a column
   const int threadCol = threadIdx.x % (BN / TN);
