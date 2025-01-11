@@ -57,7 +57,7 @@ __global__ void myvectorizedkernel(float *A, float *B, float *C, int m, int k, i
     for(int i=0; i<TM; ++i){
         for(int j=0; j<TN; j += 4){
             float4 tmp = reinterpret_cast<float4 *>(
-                &C[(threadRow * TM + i) * N + threadCol * TN + j]
+                &C[(threadRow * TM + i) * n + threadCol * TN + j]
             )[0];
             tmp.x = threadResults[i * TN + j];
             tmp.y = threadResults[i * TN + j + 1];
