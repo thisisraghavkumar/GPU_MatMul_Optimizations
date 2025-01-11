@@ -247,7 +247,7 @@ int main(){
     // Calling kernel 2
     invoke_rowmajor_matmul(d_A, d_B, d_C, m, k, n);
     run_sgemm_coalesce(m,n,k,1.0f,d_A,d_B,0.0f,d_C);
-    cout<<"Kernel 2 : Global coalesced memory\n";
+    std::cout<<"Kernel 2 : Global coalesced memory\n";
     cudaEventRecord(refbeg);
     for(int i=0; i<measurement_runs; ++i){
         run_sgemm_coalesce(m,n,k,1.0f,d_A,d_B,0.0f,d_C);
@@ -271,7 +271,7 @@ int main(){
     // Calling kernel 4
     runSgemm1DBlocktiling(m,n,k,1.0f,d_A,d_B,0.0f,d_C);
     invoke_oned_tiled_matmul(d_A, d_B, d_C, m, k, n);
-    cout<<"Kernel 4 : 1D Block tiling\n";
+    std::cout<<"Kernel 4 : 1D Block tiling\n";
     cudaEventRecord(refbeg);
     for(int i=0; i<measurement_runs; ++i){
         runSgemm1DBlocktiling(m,n,k,1.0f,d_A,d_B,0.0f,d_C);
