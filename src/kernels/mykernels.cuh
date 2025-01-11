@@ -1,6 +1,8 @@
 #ifndef MY_KERNELS_CUH
 #define MY_KERNELS_CUH
 
+#include "../helpers/myhelpers.h"
+
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 #include <nvtx3/nvToolsExt.h>
