@@ -110,16 +110,6 @@ int main(){
     cudaEventCreate(&refbeg);
     cudaEventCreate(&refend);
 
-    cudaEventRecord(mybeg);
-    for(int i=0; i<measurement_runs; ++i){
-        invoke_rowmajor_matmul(d_A, d_B, d_C, m, k, n);
-    }
-    cudaEventRecord(myend);
-    cudaEventSynchronize(mybeg);
-    cudaEventSynchronize(myend);
-    cudaEventElapsedTime(&myelapsed_time, mybeg, myend);
-    std::cout<<"My implementation: "<<myelapsed_time<<" / "<<measurement_runs<<" = "<<myelapsed_time/measurement_runs<<"\n";
-    
     cudaEventRecord(refbeg);
     for(int i=0; i<measurement_runs; ++i){
         run_sgemm_coalesce(m,n,k,1.0f,d_A,d_B,0.0f,d_C);
@@ -130,6 +120,16 @@ int main(){
     cudaEventElapsedTime(&refelapsed_time, refbeg, refend);
     std::cout<<"Ref implementation: "<<refelapsed_time<<" / "<<measurement_runs<<" = "<<refelapsed_time/measurement_runs<<"\n";
 
+    cudaEventRecord(mybeg);
+    for(int i=0; i<measurement_runs; ++i){
+        invoke_rowmajor_matmul(d_A, d_B, d_C, m, k, n);
+    }
+    cudaEventRecord(myend);
+    cudaEventSynchronize(mybeg);
+    cudaEventSynchronize(myend);
+    cudaEventElapsedTime(&myelapsed_time, mybeg, myend);
+    std::cout<<"My implementation: "<<myelapsed_time<<" / "<<measurement_runs<<" = "<<myelapsed_time/measurement_runs<<"\n";
+    
     cudaFree(d_A);
     cudaFree(d_B);
     cudaFree(d_C);
