@@ -128,42 +128,36 @@ int main()
     cudaEventSynchronize(cublasEnd);
     cudaEventElapsedTime(&cublas_elapsed_time, cublasBeg, cublasEnd);
 
-    void printPerformanceTable()
+    auto printRow = [](const std::string &name, float time, long long ops, int runs)
     {
-        std::cout << std::fixed << std::setprecision(5); // Set decimal precision for floats
-
-        // Print the table header
-        std::cout << std::setw(20) << std::left << "Kernel Name"
-                  << std::setw(20) << "Time Taken (ms)"
-                  << std::setw(20) << "GFLOP/S" << std::endl;
-
-        std::cout << std::string(60, '-') << std::endl; // Separator line
-
-        // Helper lambda to print each row
-        auto printRow = [](const std::string &name, float time, long long ops, int runs)
-        {
-            float avg_time = time / runs;
-            float gflops = (ops / (avg_time / 1000.0f)) / 1e9;
-            std::cout << std::setw(20) << std::left << name
-                      << std::setw(20) << avg_time
-                      << std::setw(20) << gflops << std::endl;
-        };
-
-        // Print rows for each kernel
-        printRow("CuBLAS", cublas_elapsed_time, numoperations, measurement_runs);
-        printRow("Naive Kernel", naive_time, numoperations, measurement_runs);
-        printRow("Row Coalesce", row_coalesce_time, numoperations, measurement_runs);
-        printRow("Shared Memory", shared_memory_time, numoperations, measurement_runs);
-        printRow("1D Tiled", oned_tiled_time, numoperations, measurement_runs);
-        printRow("2D Tiled", twod_tiled_time, numoperations, measurement_runs);
-        printRow("Vectorized", vectorized_time, numoperations, measurement_runs);
-
-        std::cout << std::string(60, '-') << std::endl; // End separator
-    }
+        float avg_time = time / runs;
+        float gflops = (ops / (avg_time / 1000.0f)) / 1e9;
+        std::cout << std::setw(20) << std::left << name
+                  << std::setw(20) << avg_time
+                  << std::setw(20) << gflops << std::endl;
+    };
 
     std::cout << std::fixed << std::setprecision(5);
     std::cout << "Number of operations: " << numoperations << std::endl;
-    printPerformanceTable();
+    std::cout << std::fixed << std::setprecision(5); // Set decimal precision for floats
+
+    // Print the table header
+    std::cout << std::setw(20) << std::left << "Kernel Name"
+              << std::setw(20) << "Time Taken (ms)"
+              << std::setw(20) << "GFLOP/S" << std::endl;
+
+    std::cout << std::string(60, '-') << std::endl;
+
+    // Print rows for each kernel
+    printRow("CuBLAS", cublas_elapsed_time, numoperations, measurement_runs);
+    printRow("Naive Kernel", naive_time, numoperations, measurement_runs);
+    printRow("Row Coalesce", row_coalesce_time, numoperations, measurement_runs);
+    printRow("Shared Memory", shared_memory_time, numoperations, measurement_runs);
+    printRow("1D Tiled", oned_tiled_time, numoperations, measurement_runs);
+    printRow("2D Tiled", twod_tiled_time, numoperations, measurement_runs);
+    printRow("Vectorized", vectorized_time, numoperations, measurement_runs);
+
+    std::cout << std::string(60, '-') << std::endl; // End separator
 
     cudaFree(d_A);
     cudaFree(d_B);
