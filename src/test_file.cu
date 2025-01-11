@@ -11,7 +11,7 @@
 #define MMN 1024LL
 #define sF sizeof(float)
 
-#define CEILDIV(dividend, divisor) ((dividend + divisor - 1) / divisor)
+#define CEIL_DIV(dividend, divisor) ((dividend + divisor - 1) / divisor)
 
 void populate_array(float *arr, int size, std::mt19937 &gen, std::uniform_real_distribution<float> &dis)
 {
@@ -62,9 +62,9 @@ __global__ void myRowCoalesceKernel(float *A, float *B, float *C, int m, int k, 
 
 void invoke_rowmajor_matmul(float *A, float *B, float *C, int m, int k, int n){
     dim3 blockSize(BLOCK_SIZE*BLOCK_SIZE);
-    dim3 gridSize(CEILDIV(m, BLOCK_SIZE), CEILDIV(n, BLOCK_SIZE));
+    dim3 gridSize(CEIL_DIV(m, BLOCK_SIZE), CEIL_DIV(n, BLOCK_SIZE));
 
-    myRowCoalesceKernel<<<gridSize, blockSize>>>(A, B, C, m, k, n);
+    myRowCoalesceKernel<32><<<gridSize, blockSize>>>(A, B, C, m, k, n);
 }
 
 int main(){
