@@ -114,7 +114,7 @@ void invoke_oned_tiled_matmul(float *A, float *B, float *C, int m, int k, int n)
     const int BN = 64;
     const int BK = 8;
     const int TM = 8;
-    dim3 gridDimension(CEILDIV(n, BN), CEILDIV(m, BM));
+    dim3 gridDimension(CEIL_DIV(n, BN), CEIL_DIV(m, BM));
     dim3 blockDimension((BN * BM)/TM);
     myonedtiledkernel<BM,BK,BN,TM><<<gridDimension,blockDimension>>>(A, B, C, m, k, n);
 }
