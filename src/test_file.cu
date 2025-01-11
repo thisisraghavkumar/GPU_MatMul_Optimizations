@@ -1,6 +1,9 @@
 #include <cuda_runtime.h>
 #include <iostream>
 #include <iomanip>
+#include <random>
+
+
 
 #define BLOCK_SIZE 32
 #define MMM 1024LL
@@ -10,6 +13,13 @@
 
 #define CEILDIV(dividend, divisor) ((dividend + divisor - 1) / divisor)
 
+void populate_array(float *arr, int size, std::mt19937 &gen, std::uniform_real_distribution<float> &dis)
+{
+    for (int i = 0; i < size; i++)
+    {
+        arr[i] = dis(gen);
+    }
+}
 
 template <const uint BLOCKSIZE>
 __global__ void sgemm_global_mem_coalesce(int M, int N, int K, float alpha,
