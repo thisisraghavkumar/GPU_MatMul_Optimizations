@@ -83,3 +83,16 @@ void invoke_vectorized_matmul(float *A, float *B, float *C, int m, int k, int n)
 
     myvectorizedkernel<BM, BN, BK, TM, TN><<<gridDim, blockDim>>>(A, B, C, m, k, n);
 }
+
+void invoke_parameterized_matmul(float *A, float *B, float *C, int m, int k, int n){
+    const int BM = 64;
+    const int BN = 64;
+    const int BK = 16;
+    const int TM = 8;
+    const int TN = 8;
+
+    dim3 gridDim(CEILDIV(n,BN),CEILDIV(m,BM));
+    dim3 blockDim((BM * BN)/(TM * TN));
+
+    myvectorizedkernel<BM, BN, BK, TM, TN><<<gridDim, blockDim>>>(A, B, C, m, k, n);
+}

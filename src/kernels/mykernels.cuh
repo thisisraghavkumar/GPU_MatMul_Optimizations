@@ -12,7 +12,7 @@ void invoke_shared_memory_matmul(float *A, float *B, float *C, int m, int k, int
 void invoke_oned_tiled_matmul(float *A, float *B, float *C, int m, int k, int n);
 void invoke_twod_tiled_matmul(float *A, float *B, float *C, int m, int k, int n);
 void invoke_vectorized_matmul(float *A, float *B, float *C, int m, int k, int n);
-
+void invoke_parameterized_matmul(float *A, float *B, float *C, int m, int k, int n);
 
 float run_kernel(const char *kernel_name, void (*invoke_kernel)(float *, float *, float *, int, int, int), float *d_A, float *d_B, float *d_C, int m, int k, int n, float *h_C, float *h_C_ref, std::mt19937 gen, int warmup_runs, int measurement_runs);
 
