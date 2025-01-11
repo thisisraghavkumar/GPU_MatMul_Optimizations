@@ -42,7 +42,7 @@ namespace wt
                 for(int j=0; j<WNITER; ++j){
                     for(int ii=0; ii<TM; ++ii){
                         for(int jj=0; jj<TN; ++jj){
-                            threadResults[(i * TM + ii) * (WNITER * TN) + (j * TN) ++ jj] +=
+                            threadResults[(i * TM + ii) * (WNITER * TN) + (j * TN) + jj] +=
                                 regM[i * TM + ii] * regN[j * TN + jj];
                         }
                     }
@@ -52,12 +52,12 @@ namespace wt
     }
 } // namespace wt
 
-template <const int BM, const int BN, const int BK, const int WM, const int WN, const int WNITER
+template <const int BM, const int BN, const int BK, const int WM, const int WN, const int WNITER,
             const int TM, const int TN, const int NUM_THREADS>
 __global__ void __launch_bounds__(NUM_THREADS) mywarptilingkernel(float *A, float *B, float *C, int m, int k, int n){
     const uint cRow = blockIdx.y;
     const uint cCol = blockIdx.x;
-    const uint wardpIdx = threadIdx.x / WARP_SIZE;
+    const uint warpIdx = threadIdx.x / WARP_SIZE;
     const uint warpCol = warpIdx % (BN/WN);
     const uint warpRow = warpIdx / (BN/WN);
 
@@ -74,7 +74,7 @@ __global__ void __launch_bounds__(NUM_THREADS) mywarptilingkernel(float *A, floa
 
     A += cRow * BM * k;
     B += cCol * BN;
-    C += (cRow * BM + warpRow * WM) * N + cCol * BN + warpCol * WN;
+    C += (cRow * BM + warpRow * WM) * n + cCol * BN + warpCol * WN;
 
     const uint innerRowA = threadIdx.x / (BK/4);
     const uint innerColA = threadIdx.x % (BK/4);
@@ -87,10 +87,12 @@ __global__ void __launch_bounds__(NUM_THREADS) mywarptilingkernel(float *A, floa
     float regM[WMITER * TM] = {0.0};
     float regN[WNITER * TN] = {0.0};
 
-    for(int bkId = 0; bkId < k; bkIdx += BK){
+    for(int bkId = 0; bkId < k; bkId += BK){
         wt::loadInputMatrices<BM, BN, BK, strideA, strideB>(A,B,As,Bs,k,n,innerRowA,innerColA,innerRowB,innerColB);
         __syncthreads();
         wt::computePartialProduct<BM,BN,BK,WM,WN,WMITER,WNITER,WSUBM,WSUBN,TM,TN>(regM,regN,threadResults,As,Bs,warpRow,warpCol,threadRowInWarp,threadColInWarp);
+        A += BK;
+        B += BK * n;
         __syncthreads();
     }
     for(uint i=0; i<WMITER; ++i){
@@ -123,10 +125,10 @@ void invoke_warptiled_matmul(float *A, float *B, float *C, int m, int k, int n){
     const uint WNITER = 4;
     const uint TN = 4;
     const uint TM = 8;
-    bim3 blockDim(NUM_THREADS);
+    dim3 blockDim(NUM_THREADS);
 
-    constexpr NUM_WARPS = NUM_THREADS / 32;
-    constexpr WMITER = (WM * WN)/(32 * TM * TN * WNITER);
+    constexpr int NUM_WARPS = NUM_THREADS / 32;
+    constexpr int WMITER = (WM * WN)/(32 * TM * TN * WNITER);
     dim3 gridDim(CEILDIV(n,BN),CEILDIV(m,BM));
     mywarptilingkernel<BM,BN,BK,WM,WN,WNITER,TM,TN,NUM_THREADS><<<gridDim,blockDim>>>(A,B,C,m,k,n);
 }
