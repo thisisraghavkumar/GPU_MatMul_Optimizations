@@ -37,10 +37,11 @@ Measurement interations: 50
 ![image](/Images/Size%20obsv.001.png)
 ![image](/Images/Size%20obsv.002.png)
 4. CuBLAS uses different SGEMM implementation for different matrix sizes, from the nsys profiler I think these are as follows
-|Matrix size|SGEMM Implementation|
-|-----------|--------------------|
-|256|ampere_sgemm_64x32_sliced1x4_nn|
-|512|void cutlass::Kernel2<cutlass_80_simt_sgemm_128x64_8x5_nn_align1>(T1::Params)|
+
+| Matrix size | SGEMM Implementation |
+| ----------- | -------------------- |
+| 256 | ampere_sgemm_64x32_sliced1x4_nn|
+|512 | void cutlass::Kernel2<cutlass_80_simt_sgemm_128x64_8x5_nn_align1>(T1::Params)|
 |1024|ampere_sgemm_128x64_nn|
 |2048|ampere_sgemm_128x64_nn|
 |4096|ampere_sgemm_128x64_nn|
