@@ -33,6 +33,19 @@ Measurement interations: 50
 
 1. The largest jump in performance is obtained when a thread produces multiple cells of the output matrix. This can be attributed to high usage of a byte once it is loaded, this is called arithmetic intensity. Increasing the number of cells produced from shared memory kernel (1) to 1D tiled kernel (TM) to 2D tiled kernel (TM * TN) to warp tiled kernel (TM * TN * WMITER * WNITER) increased performance albeit the gains diminished i.e. the jump from 2D tiled kernel to warped tiled kernel was lower than the jump from 1D tiled kernel to 2D tiled kernel which was in turn less than the jump in performance from shared memory kernel to 1D tiled kernel.
 2. The second remarkable performance improvement was obtained by using 128 byte loads instead of 32 byte loads.
+3. One kernel does not fit all sizes. Some kernels perform the same at all sizes, some perform better at larger sizes or see a drop as matrix size increases. These observations can be seen from the following images
+![image](/Images/Size%20obsv.001.png)
+![image](/Images/Size%20obsv.002.png)
+4. CuBLAS uses different SGEMM implementation for different matrix sizes, from the nsys profiler I think these are as follows
+|Matrix size|SGEMM Implementation|
+|-----------|--------------------|
+|256|ampere_sgemm_64x32_sliced1x4_nn|
+|512|void cutlass::Kernel2<cutlass_80_simt_sgemm_128x64_8x5_nn_align1>(T1::Params)|
+|1024|ampere_sgemm_128x64_nn|
+|2048|ampere_sgemm_128x64_nn|
+|4096|ampere_sgemm_128x64_nn|
+|8192|void cutlass::Kernel2<cutlass_80_simt_sgemm_256x128_8x4_nn_align1>(T1::Params)|
+5. GPU gets hot. At 8192 x 8192 x 8192 matrix multiplication there are aroud 1 TerraFLOPs executed on GPU. In such cases an efficient kernel not only saves time but also energy. Because I was running less perfomant kernels such as naive I observed the GPU temperature reach 72C from a value of 32C at rest.
 # Appendix: Illustrations
 
 ## Shared Memory Kernel Visualization
