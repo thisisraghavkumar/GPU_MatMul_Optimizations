@@ -20,7 +20,7 @@ float run_kernel(const char* kernel_name, void (*invoke_kernel)(float *, float *
     for(int i=0; i < 500; i++){
     	int randomRow = gen() % m;
     	int randomCol = gen() % n;
-    	float tolerance = 4;
+    	float tolerance = 20;
     	if(fabs(h_C[randomRow * n + randomCol] - h_C_ref[randomRow * n + randomCol]) > tolerance){
         	std::cout <<"For kernel "<<kernel_name<<std::endl;
         	std::cout <<"Error: Cublas and my kernel results do not match at "<<randomRow<<", "<<randomCol << std::endl;

@@ -60,9 +60,9 @@ void CudaDeviceInfo()
 int main()
 {
     CudaDeviceInfo();
-    int m = 2048;
-    int n = 2048;
-    int k = 2048;
+    int m = 2048LL;
+    int n = 2048LL;
+    int k = 2048LL;
     int sizeA = m * k;
     int sizeB = k * n;
     int sizeC = m * n;
